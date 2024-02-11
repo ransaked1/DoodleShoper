@@ -11,6 +11,11 @@ python = "^3.10"
 fastapi = "0.105.0"
 uvicorn = "0.24.0"
 openai = "^1.10.0"
+pymongo = "^4.6.1"
+motor = "^3.3.2"
+psutil = "^5.9.8"
+pyyaml = "^6.0.1"
+pydantic = "^2.6.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "23.12.0"

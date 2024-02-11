@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MONGODB_URL=${MONGODB_URL}
+      - MONGODB_NAME=${MONGODB_NAME}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    container_name: ${MONGODB_SERVICE_NAME}
+    volumes: 
+      - /tmp/mongo:/data/db
+    logging:
+      driver: "none"
+
+  vc_db:
+    image: mongo:latest
+    volumes:
+      - shared-database:/data/db
+    logging:
+      driver: "none"
+
+volumes:
+  shared-database:
