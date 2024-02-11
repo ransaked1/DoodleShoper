@@ -46,7 +46,7 @@ async def get_user_resource(
     db: AsyncIOMotorClient = Depends(get_db), # type: ignore
 ):
     logging.info(
-        f'Receive get user resource {uuid_masker(resource)} request'
+        f'Received get user resource with uid: {uuid_masker(resource)}'
     )
 
     user_resource = await db_get_user_resource(
