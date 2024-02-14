@@ -39,6 +39,7 @@ async def create_user_resource(
         id=uuid4(),
         username=username,
         password=password,
+        token=[],
         create_time=datetime.utcnow(),
         update_time=datetime.utcnow(),
         deleted=False,
@@ -70,6 +71,47 @@ async def get_user_resource(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password"
+        )
+
+    return user_resource
+
+async def update_token(
+    conn: AsyncIOMotorClient, # type: ignore
+    username: str,
+    token: str
+) -> UserResourceDB | None:
+    logging.info(
+        f'Updating token for {username}...'
+    )
+    user_resource = await conn[__db_name][__db_collection].find_one_and_update(
+            {"$and": [
+                {'username': username},
+                {'deleted': False},
+            ]},
+            {'$push': {
+                "token" : token,
+            }},
+            return_document=ReturnDocument.AFTER,
+        )
+    
+    user_resource = await conn[__db_name][__db_collection].find_one_and_update(
+            {"$and": [
+                {'username': username},
+                {'deleted': False},
+            ]},
+            {'$set': {
+                "update_time": datetime.utcnow(),
+            }},
+            return_document=ReturnDocument.AFTER,
+        )
+    
+    if None is user_resource:
+        logging.error(
+            f"User {username} does not exist"
+        )
+    else:
+        logging.info(
+            f'User {username} updated'
         )
 
     return user_resource

@@ -10,5 +10,6 @@ class UserResourceBase(BaseModel):
 
 class UserResourceDB(UserResourceBase, MongoModel):
     id: UUID
+    token: list
     create_time: datetime
     deleted: bool

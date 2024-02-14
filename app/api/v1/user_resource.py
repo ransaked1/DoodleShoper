@@ -10,7 +10,8 @@ import jwt
 from db.db import get_db, AsyncIOMotorClient
 from schemas.user_resource import (
     create_user_resource as db_create_user_resouce,
-    get_user_resource as db_get_user_resource
+    get_user_resource as db_get_user_resource,
+    update_token as db_update_token,
 )
 from common.util import uuid_masker
 from common.error import UnprocessableError
@@ -39,8 +40,8 @@ async def signup(
     return CreateUserResourceResp(id=user_resource_db.id)
 
 
-@router.get('/login', include_in_schema=False, status_code=status.HTTP_200_OK)
-@router.get('', response_model=GetUserResourceResp, status_code=status.HTTP_200_OK)
+@router.post('/login', include_in_schema=False, status_code=status.HTTP_200_OK)
+@router.post('', response_model=GetUserResourceResp, status_code=status.HTTP_200_OK)
 async def login(
     username: str,
     password: str,
@@ -67,5 +68,7 @@ async def login(
         "exp": datetime.utcnow() + timedelta(minutes=int(Config.app_settings.get('jwt_token_expiration')))
     }
     token = jwt.encode(token_data, Config.app_settings.get('jwt_secret'), algorithm=Config.app_settings.get('jwt_algorithm'))
+
+    user_resource = await db_update_token(db, username, token)
     
-    return GetUserResourceResp(username=user_resource.get("username"), access_token=token, token_type='bearer')
+    return GetUserResourceResp(username=username, access_token=token, token_type='bearer')
