@@ -19,7 +19,6 @@ async def create_user_resource(
     username: str,
     password: str
 ) -> UserResourceDB:
-    
     user_resource = await conn[__db_name][__db_collection].find_one(
         {"$and": [
             {'username': username},
@@ -80,9 +79,7 @@ async def update_token(
     username: str,
     token: str
 ) -> UserResourceDB | None:
-    logging.info(
-        f'Updating token for {username}...'
-    )
+    logging.info(f'Updating token for {username}...')
     user_resource = await conn[__db_name][__db_collection].find_one_and_update(
             {"$and": [
                 {'username': username},
@@ -106,12 +103,51 @@ async def update_token(
         )
     
     if None is user_resource:
-        logging.error(
-            f"User {username} does not exist"
+        logging.error(f"User {username} does not exist")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User {username} does not exist"
         )
     else:
-        logging.info(
-            f'User {username} updated'
+        logging.info(f'User {username} updated')
+
+    return user_resource
+
+async def remove_token(
+    conn: AsyncIOMotorClient, # type: ignore
+    username: str,
+    token: str
+) -> UserResourceDB | None:
+    logging.info(f'Removing token for {username}...')
+    user_resource = await conn[__db_name][__db_collection].find_one_and_update(
+            {"$and": [
+                {'username': username},
+                {'deleted': False},
+            ]},
+            {'$pull': {
+                "token" : token,
+            }},
+            return_document=ReturnDocument.AFTER,
         )
+    
+    user_resource = await conn[__db_name][__db_collection].find_one_and_update(
+            {"$and": [
+                {'username': username},
+                {'deleted': False},
+            ]},
+            {'$set': {
+                "update_time": datetime.utcnow(),
+            }},
+            return_document=ReturnDocument.AFTER,
+        )
+    
+    if None is user_resource:
+        logging.error(f"User {username} does not exist")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User {username} does not exist"
+        )
+    else:
+        logging.info(f'User {username} updated')
 
     return user_resource

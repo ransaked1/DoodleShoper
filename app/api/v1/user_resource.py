@@ -12,36 +12,37 @@ from schemas.user_resource import (
     create_user_resource as db_create_user_resouce,
     get_user_resource as db_get_user_resource,
     update_token as db_update_token,
+    remove_token as db_remove_token
 )
 from common.util import uuid_masker
 from common.error import UnprocessableError
 
-from models.create_user_resource import CreateUserResourceReq, CreateUserResourceResp
-from models.get_user_resource import GetUserResourceResp
+from models.register_user import RegisterUserResourceReq, RegisterUserResourceResp
+from models.login_user import LoginUserResourceResp
 
 router = APIRouter()
 
 @router.post('/signup', include_in_schema=False, status_code=status.HTTP_201_CREATED)
-@router.post('', response_model=CreateUserResourceResp, status_code=status.HTTP_201_CREATED)
+@router.post('', response_model=RegisterUserResourceResp, status_code=status.HTTP_201_CREATED)
 async def signup(
-    user_resource_data: CreateUserResourceReq,
+    user_resource_data: RegisterUserResourceReq,
     db: AsyncIOMotorClient = Depends(get_db) # type: ignore
 ):
     logging.info('Received create user resource request')
     logging.info(f'Password: {user_resource_data.password}')
 
     hashed_password = bcrypt.hash(user_resource_data.password)
-    user_resource_db = await db_create_user_resouce(
+    user_resource = await db_create_user_resouce(
         db,
         user_resource_data.username,
         hashed_password
     )
 
-    return CreateUserResourceResp(id=user_resource_db.id)
+    return RegisterUserResourceResp(id=user_resource.id)
 
 
 @router.post('/login', include_in_schema=False, status_code=status.HTTP_200_OK)
-@router.post('', response_model=GetUserResourceResp, status_code=status.HTTP_200_OK)
+@router.post('', response_model=LoginUserResourceResp, status_code=status.HTTP_200_OK)
 async def login(
     username: str,
     password: str,
@@ -71,4 +72,17 @@ async def login(
 
     user_resource = await db_update_token(db, username, token)
     
-    return GetUserResourceResp(username=username, access_token=token, token_type='bearer')
+    return LoginUserResourceResp(username=username, access_token=token, token_type='bearer')
+
+@router.post('/logout', include_in_schema=False, status_code=status.HTTP_204_NO_CONTENT)
+@router.post('', status_code=status.HTTP_204_NO_CONTENT)
+async def logout(
+    username: str,
+    token: str,
+    db: AsyncIOMotorClient = Depends(get_db), # type: ignore
+):
+    logging.info(f'Received logout request for: {username}')
+
+    await db_remove_token(db, username, token)
+    
+    return None

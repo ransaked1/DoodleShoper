@@ -23,7 +23,7 @@ handlers:
 filters:
   sensitive_info:
     (): conf.logging.SensitiveInfoFilter
-    sensitive_words: [password, secret, username, token, key]
+    sensitive_words: [jwt_secret, db_password]
 
 root:
   level: $LOG_LEVEL

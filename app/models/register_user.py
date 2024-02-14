@@ -3,9 +3,9 @@ from uuid import UUID
 from .user_resource_common import UserResourceBase
 from .model import MongoModel
 
-class CreateUserResourceReq(UserResourceBase):
+class RegisterUserResourceReq(UserResourceBase):
     username: str
     password: str
 
-class CreateUserResourceResp(MongoModel):
+class RegisterUserResourceResp(MongoModel):
     id: UUID
