@@ -11,6 +11,11 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - MONGODB_URL=${MONGODB_URL}
       - MONGODB_NAME=${MONGODB_NAME}
+      - MONGO_USER=${MONGO_USER}
+      - MONGO_PASSWORD=${MONGO_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_ALGORITHM=${JWT_ALGORITHM}
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
     ports:
       - "8080:8080"
     depends_on:
@@ -23,8 +28,23 @@ services:
     container_name: ${MONGODB_SERVICE_NAME}
     volumes: 
       - /tmp/mongo:/data/db
-    logging:
-      driver: "none"
+    restart: unless-stopped
+    environment:
+      - MAX_CONNECTIONS_COUNT=10
+      - MIN_CONNECTIONS_COUNT=3
+  
+  mongo-express:
+    image: mongo-express
+    container_name: mexpress
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_BASICAUTH_USERNAME=${MONGO_USER}
+      - ME_CONFIG_BASICAUTH_PASSWORD=${MONGO_PASSWORD}
+    depends_on:
+      - mongodb
 
   vc_db:
     image: mongo:latest

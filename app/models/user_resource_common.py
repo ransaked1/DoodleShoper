@@ -3,18 +3,23 @@ from datetime import datetime
 from uuid import UUID
 
 from .model import MongoModel
+from passlib.context import CryptContext
 
-
-def to_lower_camel_case(string: str) -> str:
-    split_str = string.split('_')
-    return split_str[0] + ''.join(word.capitalize() for word in split_str[1:])
-
+# Password hashing
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserResourceBase(BaseModel):
-    name: constr(max_length=255) # type: ignore
+    username: constr(max_length=255) # type: ignore
+    password: constr(min_length=8, max_length=255) # type: ignore
 
+    def hash_password(self):
+        self.password = pwd_context.hash(self.password)
 
 class UserResourceDB(UserResourceBase, MongoModel):
     id: UUID
     create_time: datetime
     deleted: bool
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        self.hash_password()
