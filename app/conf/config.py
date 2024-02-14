@@ -2,7 +2,6 @@ import os
 import logging
 
 from common.error import InternalError
-from passlib.context import CryptContext
 
 class Config:
     version = "0.1"
@@ -15,8 +14,7 @@ class Config:
         'db_password': os.getenv('MONGO_PASSWORD'),
         'jwt_secret': os.getenv('JWT_SECRET_KEY'),
         'jwt_algorithm': os.getenv('JWT_ALGORITHM'),
-        'jwt_token_expiration': os.getenv('JWT_TOKEN_EXPIRATION'),
-        'pwd_context': CryptContext(schemes=["bcrypt"], deprecated="auto"),
+        'jwt_token_expiration': os.getenv('JWT_ACCESS_TOKEN_EXPIRE_MINUTES'),
     }
 
     @classmethod

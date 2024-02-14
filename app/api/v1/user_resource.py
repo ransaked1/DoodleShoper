@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from passlib.context import CryptContext
+from passlib.hash import bcrypt
 from datetime import datetime, timedelta
 import logging
 from conf.config import Config
@@ -27,8 +27,9 @@ async def signup(
     db: AsyncIOMotorClient = Depends(get_db) # type: ignore
 ):
     logging.info('Received create user resource request')
+    logging.info(f'Password: {user_resource_data.password}')
 
-    hashed_password = Config.app_settings.get('pwd_context').hash(user_resource_data.password)
+    hashed_password = bcrypt.hash(user_resource_data.password)
     user_resource_db = await db_create_user_resouce(
         db,
         user_resource_data.username,
@@ -47,15 +48,14 @@ async def login(
 ):
     logging.info(f'Received login request for: {username}')
 
-    user_resource = await db_get_user_resource(db, username, password)
-    
+    user_resource = await db_get_user_resource(db, username)
     if user_resource is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password"
         )
     
-    if not Config.app_settings.get('pwd_context').verify(password, user_resource.get("password")):
+    if not bcrypt.verify(password, user_resource.get("password")):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password"
@@ -63,8 +63,8 @@ async def login(
     
     # Generate JWT token
     token_data = {
-        "sub": str(user_resource.id),
-        "exp": datetime.utcnow() + timedelta(minutes=Config.app_settings.get('jwt_token_expiration'))
+        "sub": username,
+        "exp": datetime.utcnow() + timedelta(minutes=int(Config.app_settings.get('jwt_token_expiration')))
     }
     token = jwt.encode(token_data, Config.app_settings.get('jwt_secret'), algorithm=Config.app_settings.get('jwt_algorithm'))
     
