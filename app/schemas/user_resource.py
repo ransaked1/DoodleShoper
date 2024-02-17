@@ -119,6 +119,7 @@ async def remove_token(
     token: str
 ) -> UserResourceDB | None:
     logging.info(f'Removing token for {username}...')
+
     user_resource = await conn[__db_name][__db_collection].find_one_and_update(
             {"$and": [
                 {'username': username},
@@ -151,3 +152,24 @@ async def remove_token(
         logging.info(f'User {username} updated')
 
     return user_resource
+
+async def check_token(
+    conn: AsyncIOMotorClient, # type: ignore
+    username: str,
+    token: str
+) -> True | False:
+    logging.info(f'Checking token for {username}...')
+    
+    count = await conn[__db_name][__db_collection].count_documents(
+            {'$and': [
+                {'username': username}, 
+                {'token': {'$in': [token]}}
+            ]}
+        )
+    
+    if count > 0:
+        logging.info(f'User {username} token checked')
+        return True
+    else:
+        logging.info(f'User {username} token not found')
+        return False

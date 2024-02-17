@@ -12,7 +12,8 @@ from schemas.user_resource import (
     create_user_resource as db_create_user_resouce,
     get_user_resource as db_get_user_resource,
     update_token as db_update_token,
-    remove_token as db_remove_token
+    remove_token as db_remove_token,
+    check_token as db_check_token
 )
 from common.util import uuid_masker
 from common.error import UnprocessableError
@@ -86,3 +87,5 @@ async def logout(
     await db_remove_token(db, username, token)
     
     return None
+
+# validation = await db_check_token(db, username, token)
