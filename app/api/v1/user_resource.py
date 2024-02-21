@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+from typing import Annotated
 from passlib.hash import bcrypt
 from datetime import datetime, timedelta
 import logging
@@ -22,6 +24,8 @@ from models.register_user import RegisterUserResourceReq, RegisterUserResourceRe
 from models.login_user import LoginUserResourceResp
 
 router = APIRouter()
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @router.post('/signup', include_in_schema=False, status_code=status.HTTP_201_CREATED)
 @router.post('', response_model=RegisterUserResourceResp, status_code=status.HTTP_201_CREATED)

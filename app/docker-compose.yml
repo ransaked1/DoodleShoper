@@ -9,6 +9,7 @@ services:
     environment:
       - LOG_LEVEL=${LOG_LEVEL}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_ASSISTANT_ID=${OPENAI_ASSISTANT_ID}
       - MONGODB_URL=${MONGODB_URL}
       - MONGODB_NAME=${MONGODB_NAME}
       - MONGO_USER=${MONGO_USER}

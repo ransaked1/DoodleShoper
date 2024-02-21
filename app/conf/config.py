@@ -15,6 +15,8 @@ class Config:
         'jwt_secret': os.getenv('JWT_SECRET_KEY'),
         'jwt_algorithm': os.getenv('JWT_ALGORITHM'),
         'jwt_token_expiration': os.getenv('JWT_ACCESS_TOKEN_EXPIRE_MINUTES'),
+        'openai_key': os.getenv('OPENAI_API_KEY'),
+        'openai_assistant': os.getenv('OPENAI_ASSISTANT_ID'),
     }
 
     @classmethod
