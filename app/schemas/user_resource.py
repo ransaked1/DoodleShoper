@@ -7,9 +7,6 @@ from fastapi import HTTPException, status
 from conf.config import Config
 from db.db import AsyncIOMotorClient
 from models.user_resource_common import UserResourceDB
-from common.util import uuid_masker
-
-from passlib.context import CryptContext
 
 __db_name = Config.app_settings.get('db_name')
 __db_collection = 'user_resource'
@@ -37,8 +34,7 @@ async def create_user_resource(
     new_user_resource = UserResourceDB(
         id=uuid4(),
         username=username,
-        password=password,
-        token=[],
+        hashed_password=password,
         create_time=datetime.utcnow(),
         update_time=datetime.utcnow(),
         deleted=False,
@@ -73,103 +69,3 @@ async def get_user_resource(
         )
 
     return user_resource
-
-async def update_token(
-    conn: AsyncIOMotorClient, # type: ignore
-    username: str,
-    token: str
-) -> UserResourceDB | None:
-    logging.info(f'Updating token for {username}...')
-    user_resource = await conn[__db_name][__db_collection].find_one_and_update(
-            {"$and": [
-                {'username': username},
-                {'deleted': False},
-            ]},
-            {'$push': {
-                "token" : token,
-            }},
-            return_document=ReturnDocument.AFTER,
-        )
-    
-    user_resource = await conn[__db_name][__db_collection].find_one_and_update(
-            {"$and": [
-                {'username': username},
-                {'deleted': False},
-            ]},
-            {'$set': {
-                "update_time": datetime.utcnow(),
-            }},
-            return_document=ReturnDocument.AFTER,
-        )
-    
-    if None is user_resource:
-        logging.error(f"User {username} does not exist")
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User {username} does not exist"
-        )
-    else:
-        logging.info(f'User {username} updated')
-
-    return user_resource
-
-async def remove_token(
-    conn: AsyncIOMotorClient, # type: ignore
-    username: str,
-    token: str
-) -> UserResourceDB | None:
-    logging.info(f'Removing token for {username}...')
-
-    user_resource = await conn[__db_name][__db_collection].find_one_and_update(
-            {"$and": [
-                {'username': username},
-                {'deleted': False},
-            ]},
-            {'$pull': {
-                "token" : token,
-            }},
-            return_document=ReturnDocument.AFTER,
-        )
-    
-    user_resource = await conn[__db_name][__db_collection].find_one_and_update(
-            {"$and": [
-                {'username': username},
-                {'deleted': False},
-            ]},
-            {'$set': {
-                "update_time": datetime.utcnow(),
-            }},
-            return_document=ReturnDocument.AFTER,
-        )
-    
-    if None is user_resource:
-        logging.error(f"User {username} does not exist")
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User {username} does not exist"
-        )
-    else:
-        logging.info(f'User {username} updated')
-
-    return user_resource
-
-async def check_token(
-    conn: AsyncIOMotorClient, # type: ignore
-    username: str,
-    token: str
-) -> True | False:
-    logging.info(f'Checking token for {username}...')
-    
-    count = await conn[__db_name][__db_collection].count_documents(
-            {'$and': [
-                {'username': username}, 
-                {'token': {'$in': [token]}}
-            ]}
-        )
-    
-    if count > 0:
-        logging.info(f'User {username} token checked')
-        return True
-    else:
-        logging.info(f'User {username} token not found')
-        return False

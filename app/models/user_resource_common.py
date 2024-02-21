@@ -6,10 +6,9 @@ from .model import MongoModel
 
 class UserResourceBase(BaseModel):
     username: constr(max_length=255) # type: ignore
-    password: constr(min_length=8, max_length=255) # type: ignore
+    hashed_password: str # type: ignore
 
 class UserResourceDB(UserResourceBase, MongoModel):
     id: UUID
-    token: list
     create_time: datetime
     deleted: bool
