@@ -17,6 +17,7 @@ class Config:
         'jwt_token_expiration': os.getenv('JWT_ACCESS_TOKEN_EXPIRE_MINUTES'),
         'openai_key': os.getenv('OPENAI_API_KEY'),
         'openai_assistant': os.getenv('OPENAI_ASSISTANT_ID'),
+        'redis_url': os.getenv('REDIS_URL'),
     }
 
     @classmethod

@@ -19,6 +19,7 @@ pydantic = "^2.6.1"
 python-multipart = "^0.0.9"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 passlib = "^1.7.4"
+aioredis = "^2.0.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "23.12.0"

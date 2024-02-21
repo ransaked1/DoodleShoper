@@ -6,6 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: app
+    ports:
+      - "8080:8080"
     environment:
       - LOG_LEVEL=${LOG_LEVEL}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
@@ -17,10 +19,16 @@ services:
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - JWT_ALGORITHM=${JWT_ALGORITHM}
       - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_ACCESS_TOKEN_EXPIRE_MINUTES}
-    ports:
-      - "8080:8080"
+      - REDIS_URL=redis://redis:6379
     depends_on:
       - mongodb
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    entrypoint: redis-server --appendonly yes
 
   mongodb:
     image: mongo:latest

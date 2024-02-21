@@ -43,9 +43,7 @@ async def create_user_resource(
     await conn[__db_name][__db_collection].insert_one(
         new_user_resource.mongo()
     )
-    logging.info(
-        f"User resource {username} inserted into db"
-    )
+    logging.info(f"User resource {username} inserted into db")
     return new_user_resource
 
 async def get_user_resource(
