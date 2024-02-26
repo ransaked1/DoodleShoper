@@ -11,7 +11,15 @@ from schemas.user_resource import (
     get_user_resource as db_get_user_resource,
 )
 
-from models.threads import CreateThreadResourceResp
+from models.threads import (
+    CreateThreadResourceResp, 
+    ListThreadResourceResp, 
+    SendMessageResourceReq,
+    ListMessageResourceResp,
+    SendMessageResourceResp,
+    RunThreadResp,
+    RunThreadStatusResp
+)
 
 from common.util import get_current_user
 from openai import OpenAI
@@ -43,7 +51,7 @@ async def text_thread_list(
 
     user_resource = await db_get_user_resource(db, current_user.get("username"))
     
-    return user_resource.get("threads")
+    return ListThreadResourceResp(threads=user_resource.get("threads"))
 
 @router.delete('/text', status_code=status.HTTP_204_NO_CONTENT)
 async def text_thread_delete(
@@ -56,3 +64,59 @@ async def text_thread_delete(
     await db_remove_thread_user_resource(db, current_user.get("username"), thread_id)
     
     return None
+
+@router.get('/text/{thread_id}/messages', status_code=status.HTTP_200_OK)
+async def text_messages_list(
+    thread_id,
+    current_user: Annotated[str, Depends(get_current_user)],
+):
+    logging.info(f'Listing messages for thread {thread_id}')
+
+    thread_messages = client.beta.threads.messages.list(thread_id, limit=50)
+    
+    return ListMessageResourceResp(messages=thread_messages.data)
+
+@router.post('/text/{thread_id}/messages', status_code=status.HTTP_200_OK)
+async def text_messages_send(
+    thread_id,
+    content_data: SendMessageResourceReq,
+    current_user: Annotated[str, Depends(get_current_user)],
+):
+    logging.info(f'Message to thread {thread_id}')
+
+    thread_message = client.beta.threads.messages.create(
+        thread_id,
+        role="user",
+        content=content_data.content,
+    )
+
+    return SendMessageResourceResp(id=thread_message.id)
+
+@router.post('/text/{thread_id}/runs', status_code=status.HTTP_200_OK)
+async def text_thread_run(
+    thread_id,
+    current_user: Annotated[str, Depends(get_current_user)],
+):
+    logging.info(f'Run thread {thread_id} for assistant {Config.app_settings.get("openai_assistant")}')
+
+    run = client.beta.threads.runs.create(
+        thread_id=thread_id,
+        assistant_id=Config.app_settings.get("openai_assistant")
+    )
+
+    return RunThreadResp(id=run.id)
+
+@router.get('/text/{thread_id}/runs/{run_id}', status_code=status.HTTP_200_OK)
+async def text_thread_check(
+    thread_id,
+    run_id,
+    current_user: Annotated[str, Depends(get_current_user)],
+):
+    logging.info(f'Run thread {thread_id} for assistant {Config.app_settings.get("openai_assistant")}')
+
+    run = client.beta.threads.runs.retrieve(
+        thread_id=thread_id,
+        run_id=run_id
+    )
+
+    return RunThreadStatusResp(status=run.status)
