@@ -35,6 +35,7 @@ async def create_user_resource(
         id=uuid4(),
         username=username,
         hashed_password=password,
+        threads=[],
         create_time=datetime.utcnow(),
         update_time=datetime.utcnow(),
         deleted=False,
@@ -57,6 +58,84 @@ async def get_user_resource(
             {'deleted': False},
         ]},
     )
+
+    # If user is not found, raise exception
+    if user_resource==None:
+        logging.info(f"Resource {username} is None")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password"
+        )
+
+    return user_resource
+
+async def add_thread_user_resource(
+    conn: AsyncIOMotorClient, # type: ignore
+    username: str,
+    thread_id: str
+) -> UserResourceDB | None:
+    logging.info(f"Adding thread {thread_id} to {username}...")
+
+    user_resource = await conn[__db_name][__db_collection].find_one_and_update(
+            {"$and": [
+                {'username': username},
+                {'deleted': False},
+            ]},
+            {'$push': {
+                "threads" : thread_id,
+            }},
+            return_document=ReturnDocument.AFTER,
+        )
+    
+    user_resource = await conn[__db_name][__db_collection].find_one_and_update(
+            {"$and": [
+                {'username': username},
+                {'deleted': False},
+            ]},
+            {'$set': {
+                "update_time": datetime.utcnow(),
+            }},
+            return_document=ReturnDocument.AFTER,
+        )
+
+    # If user is not found, raise exception
+    if user_resource==None:
+        logging.info(f"Resource {username} is None")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password"
+        )
+
+    return user_resource
+
+async def remove_thread_user_resource(
+    conn: AsyncIOMotorClient, # type: ignore
+    username: str,
+    thread_id: str
+) -> UserResourceDB | None:
+    logging.info(f"Removing thread {thread_id} from {username}...")
+
+    user_resource = await conn[__db_name][__db_collection].find_one_and_update(
+            {"$and": [
+                {'username': username},
+                {'deleted': False},
+            ]},
+            {'$pull': {
+                "threads" : thread_id,
+            }},
+            return_document=ReturnDocument.AFTER,
+        )
+    
+    user_resource = await conn[__db_name][__db_collection].find_one_and_update(
+            {"$and": [
+                {'username': username},
+                {'deleted': False},
+            ]},
+            {'$set': {
+                "update_time": datetime.utcnow(),
+            }},
+            return_document=ReturnDocument.AFTER,
+        )
 
     # If user is not found, raise exception
     if user_resource==None:

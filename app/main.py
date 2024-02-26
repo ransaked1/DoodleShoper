@@ -16,7 +16,7 @@ from conf.config import Config
 
 from api import health
 from api.v1 import user_resource as user_resource_v1
-from api.v1 import chat_resource as chat_resource_v1
+from api.v1 import threads_resource as threads_resource_v1
 
 import logging
 
@@ -99,7 +99,7 @@ app.include_router(
 )
 
 app.include_router(
-    chat_resource_v1.router,
-    prefix='/api/v1/chats',
-    tags=["chat resource v1"]
+    threads_resource_v1.router,
+    prefix='/api/v1/threads',
+    tags=["threads resource v1"]
 )
