@@ -20,7 +20,7 @@ router = APIRouter()
 
 client = OpenAI(api_key=Config.app_settings.get('openai_key'))
 
-@router.post('/text/new', status_code=status.HTTP_200_OK)
+@router.post('/text', status_code=status.HTTP_200_OK)
 async def text_thread_new(
     current_user: Annotated[str, Depends(get_current_user)],
     db: AsyncIOMotorClient = Depends(get_db), # type: ignore
@@ -34,7 +34,7 @@ async def text_thread_new(
     return CreateThreadResourceResp(id=new_thread.id)
 
 
-@router.get('/text/list', status_code=status.HTTP_200_OK)
+@router.get('/text', status_code=status.HTTP_200_OK)
 async def text_thread_list(
     current_user: Annotated[str, Depends(get_current_user)],
     db: AsyncIOMotorClient = Depends(get_db), # type: ignore
@@ -45,7 +45,7 @@ async def text_thread_list(
     
     return user_resource.get("threads")
 
-@router.delete('/text/delete', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete('/text', status_code=status.HTTP_204_NO_CONTENT)
 async def text_thread_delete(
     thread_id: str,
     current_user: Annotated[str, Depends(get_current_user)],
