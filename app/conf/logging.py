@@ -11,11 +11,12 @@ class SensitiveInfoFilter(logging.Filter):
         self.sensitive_words = sensitive_words
 
     def filter(self, record):
-        # Check sensitive information
-        msg = record.getMessage()
-        for word in self.sensitive_words:
-            msg = msg.replace(word, "*" * len(word))
-        record.msg = msg
+        # This breaks with openai responses so commented it
+        # # Check sensitive information
+        # msg = record.getMessage()
+        # for word in self.sensitive_words:
+        #     msg = msg.replace(word, "*" * len(word))
+        # record.msg = msg
         return True
 
 
@@ -25,6 +26,7 @@ def replace_env_for_config(log_conf: dict) -> None:
             replace_env_for_config(v)
         elif isinstance(v, str) and v[0] == '$':
             log_conf[k] = os.environ.get(v[1:])
+    return None
 
 
 def create_log_config(log_path: str) -> dict:

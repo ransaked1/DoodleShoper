@@ -36,6 +36,24 @@ def uuid_masker(exposed_uuid: str | UUID) -> str:
         uuid_str
     )
 
+async def validate_credentials(
+    token: Annotated[str, Depends(oauth2_scheme)],
+):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    # Decode JWT token
+    try:
+        payload = jwt.decode(token, Config.app_settings.get('jwt_secret'), algorithms=Config.app_settings.get('jwt_algorithm'))
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
     db: AsyncIOMotorClient = Depends(get_db), # type: ignore

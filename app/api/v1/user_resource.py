@@ -16,13 +16,11 @@ from schemas.user_resource import (
 from models.register_user import RegisterUserResourceReq, RegisterUserResourceResp
 from models.login_user import LoginUserResourceResp
 
-from common.util import get_current_user, get_redis_pool
+from common.util import get_current_user, get_redis_pool, validate_credentials
 
 import aioredis
 
 router = APIRouter()
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/token")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
