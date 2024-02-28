@@ -14,6 +14,7 @@ from jose import jwt, JWTError
 from db.db import get_db, AsyncIOMotorClient
 from schemas.user_resource import get_user_resource as db_get_user_resource
 from models.login_user import TokenData
+from googlesearch import search
 
 import aioredis
 
@@ -86,3 +87,8 @@ async def get_current_user(
         raise credentials_exception
 
     return user
+
+def get_search_results(query, num_results=5):
+    search_results = search(query, num_results=num_results, stop=num_results, pause=2)
+    links = ', '.join(search_results)
+    return links

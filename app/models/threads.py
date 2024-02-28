@@ -24,3 +24,7 @@ class RunThreadResp(MongoModel):
 class RunThreadStatusResp(MongoModel):
     status: str
     action: object | None
+
+class SubmitToolsReq(BaseModel):
+    tool_call_id: str
+    prompt: str
