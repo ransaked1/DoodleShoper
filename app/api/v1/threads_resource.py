@@ -119,4 +119,24 @@ async def text_thread_check(
         run_id=run_id
     )
 
-    return RunThreadStatusResp(status=run.status)
+    return RunThreadStatusResp(status=run.status, action=run.required_action)
+
+@router.post('/text/{thread_id}/runs/{run_id}/submit_tool_outputs', status_code=status.HTTP_204_NO_CONTENT)
+async def text_thread_submit_tool(
+    thread_id,
+    run_id,
+    tool_call_id: str,
+    current_user: Annotated[str, Depends(get_current_user)],
+):
+    logging.info(f'Submit tool outputs for call {tool_call_id}')
+
+    run = client.beta.threads.runs.submit_tool_outputs(
+        thread_id=thread_id,
+        run_id=run_id,
+        tool_outputs=[{
+            "tool_call_id": tool_call_id,
+            "output": "https://www.uniqlo.com/eu/en/product/kids-soft-brushed-cotton-striped-crew-neck-long-sleeved-t-shirt-461151.html\", \"https://www.uniqlo.com/ph/en/products/E465492-000"
+        }]
+    )
+
+    return None

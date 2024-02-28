@@ -23,3 +23,4 @@ class RunThreadResp(MongoModel):
 
 class RunThreadStatusResp(MongoModel):
     status: str
+    action: object | None
