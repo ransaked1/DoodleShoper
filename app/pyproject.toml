@@ -21,7 +21,7 @@ python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 passlib = "^1.7.4"
 aioredis = "^2.0.1"
 pytest = "^8.0.1"
-googlesearch-python = "^1.2.3"
+requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "23.12.0"

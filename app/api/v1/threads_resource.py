@@ -22,7 +22,9 @@ from models.threads import (
     SubmitToolsReq
 )
 
-from common.util import get_current_user, get_search_results
+from common.util import get_current_user
+from common.google_search import fetch_search_results
+
 from openai import OpenAI
 
 router = APIRouter()
@@ -136,7 +138,7 @@ async def text_thread_submit_tool(
         run_id=run_id,
         tool_outputs=[{
             "tool_call_id": req_data.tool_call_id,
-            "output": get_search_results(req_data.prompt, 3)
+            "output": fetch_search_results(req_data.prompt)
         }]
     )
 

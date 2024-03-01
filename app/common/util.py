@@ -14,7 +14,6 @@ from jose import jwt, JWTError
 from db.db import get_db, AsyncIOMotorClient
 from schemas.user_resource import get_user_resource as db_get_user_resource
 from models.login_user import TokenData
-from googlesearch import search
 
 import aioredis
 
@@ -87,20 +86,3 @@ async def get_current_user(
         raise credentials_exception
 
     return user
-
-def get_search_results(query, num_results=1):
-    logging.info(f'Making google search for: {query}...')
-
-    # Perform the search
-    search_results = search(query, num_results=num_results, advanced=True)
-
-    logging.info(f'Google search finished for: {query}.')
-
-    # Extract the URLs
-    search_result_urls = [result.url for result in search_results]
-
-    # Convert the list of URLs to a string
-    search_results_string = ', '.join(search_result_urls)
-
-    logging.info(f'Result: {search_results_string}')
-    return search_results_string

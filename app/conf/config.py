@@ -18,6 +18,8 @@ class Config:
         'openai_key': os.getenv('OPENAI_API_KEY'),
         'openai_assistant': os.getenv('OPENAI_ASSISTANT_ID'),
         'redis_url': os.getenv('REDIS_URL'),
+        'google_api_key': os.getenv('GOOGLE_CUSTOM_SEARCH_API_KEY'),
+        'google_engine_id': os.getenv('GOOGLE_SEARCH_ENGINE_ID')
     }
 
     @classmethod
