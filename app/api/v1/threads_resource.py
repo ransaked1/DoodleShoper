@@ -129,14 +129,14 @@ async def text_thread_submit_tool(
     req_data: SubmitToolsReq,
     current_user: Annotated[str, Depends(get_current_user)],
 ):
-    logging.info(f'Submit tool outputs for call {tool_call_id}')
+    logging.info(f'Submit tool outputs for call {req_data.tool_call_id}')
 
     run = client.beta.threads.runs.submit_tool_outputs(
         thread_id=thread_id,
         run_id=run_id,
         tool_outputs=[{
             "tool_call_id": req_data.tool_call_id,
-            "output": get_search_results(req_data.prompt, 10)
+            "output": get_search_results(req_data.prompt, 3)
         }]
     )
 
