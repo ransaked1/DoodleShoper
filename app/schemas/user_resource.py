@@ -8,6 +8,8 @@ from conf.config import Config
 from db.db import AsyncIOMotorClient
 from models.user_resource_common import UserResourceDB
 
+from common.constants import *
+
 __db_name = Config.app_settings.get('db_name')
 __db_collection = 'user_resource'
 
@@ -35,7 +37,9 @@ async def create_user_resource(
         id=uuid4(),
         username=username,
         hashed_password=password,
-        threads=[],
+        text_threads=[],
+        mixed_threads=[],
+        sketch_threads=[],
         create_time=datetime.utcnow(),
         update_time=datetime.utcnow(),
         deleted=False,
@@ -52,6 +56,7 @@ async def get_user_resource(
     username: str
 ) -> UserResourceDB | None:
     logging.info(f"Getting user resource {username}...")
+
     user_resource = await conn[__db_name][__db_collection].find_one(
         {"$and": [
             {'username': username},
@@ -64,7 +69,7 @@ async def get_user_resource(
         logging.info(f"Resource {username} is None")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password"
+            detail=INVALID_USER_PASS_MESSAGE
         )
 
     return user_resource
@@ -104,7 +109,7 @@ async def add_thread_user_resource(
         logging.info(f"Resource {username} is None")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password"
+            detail=INVALID_USER_PASS_MESSAGE
         )
 
     return user_resource
@@ -144,7 +149,7 @@ async def remove_thread_user_resource(
         logging.info(f"Resource {username} is None")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password"
+            detail=INVALID_USER_PASS_MESSAGE
         )
 
     return user_resource

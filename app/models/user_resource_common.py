@@ -12,6 +12,6 @@ class UserResourceDB(UserResourceBase, MongoModel):
     id: UUID
     text_threads: list
     mixed_threads: list
-    stketch_threads: list
+    sketch_threads: list
     create_time: datetime
     deleted: bool

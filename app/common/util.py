@@ -15,6 +15,8 @@ from db.db import get_db, AsyncIOMotorClient
 from schemas.user_resource import get_user_resource as db_get_user_resource
 from models.login_user import TokenData
 
+from common.constants import CREDENTIALS_ERROR_MESSAGE
+
 import aioredis
 
 redis_pool = None
@@ -41,7 +43,7 @@ async def validate_credentials(
 ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail=CREDENTIALS_ERROR_MESSAGE,
         headers={"WWW-Authenticate": "Bearer"},
     )
 
@@ -62,7 +64,7 @@ async def get_current_user(
     
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+        detail=CREDENTIALS_ERROR_MESSAGE,
         headers={"WWW-Authenticate": "Bearer"},
     )
 

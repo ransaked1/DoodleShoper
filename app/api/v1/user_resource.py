@@ -16,7 +16,8 @@ from schemas.user_resource import (
 from models.register_user import RegisterUserResourceReq, RegisterUserResourceResp
 from models.login_user import LoginUserResourceResp
 
-from common.util import get_current_user, get_redis_pool, validate_credentials
+from common.util import get_current_user, get_redis_pool
+from common.constants import *
 
 import aioredis
 
@@ -57,14 +58,14 @@ async def login(
     if user_resource is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password"
+            detail=INVALID_USER_PASS_MESSAGE
         )
 
     # Check passwords match
     if not pwd_context.verify(form_data.password, user_resource.get("hashed_password")):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password"
+            detail=INVALID_USER_PASS_MESSAGE
         )
     
     # Generate JWT token
