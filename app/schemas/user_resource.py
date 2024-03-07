@@ -72,7 +72,8 @@ async def get_user_resource(
 async def add_thread_user_resource(
     conn: AsyncIOMotorClient, # type: ignore
     username: str,
-    thread_id: str
+    thread_id: str,
+    thread_type
 ) -> UserResourceDB | None:
     logging.info(f"Adding thread {thread_id} to {username}...")
 
@@ -82,7 +83,7 @@ async def add_thread_user_resource(
                 {'deleted': False},
             ]},
             {'$push': {
-                "threads" : thread_id,
+                f"{thread_type}_threads" : thread_id,
             }},
             return_document=ReturnDocument.AFTER,
         )
@@ -111,7 +112,8 @@ async def add_thread_user_resource(
 async def remove_thread_user_resource(
     conn: AsyncIOMotorClient, # type: ignore
     username: str,
-    thread_id: str
+    thread_id: str,
+    thread_type
 ) -> UserResourceDB | None:
     logging.info(f"Removing thread {thread_id} from {username}...")
 
@@ -121,7 +123,7 @@ async def remove_thread_user_resource(
                 {'deleted': False},
             ]},
             {'$pull': {
-                "threads" : thread_id,
+                f"{thread_type}_threads" : thread_id,
             }},
             return_document=ReturnDocument.AFTER,
         )

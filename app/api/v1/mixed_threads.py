@@ -23,7 +23,8 @@ from models.threads import (
 )
 
 from common.util import get_current_user
-from common.google_search import fetch_search_results
+from common.google_search import fetch_search_results_img
+from common.constants import *
 
 from openai import OpenAI
 
@@ -31,8 +32,8 @@ router = APIRouter()
 
 client = OpenAI(api_key=Config.app_settings.get('openai_key'))
 
-@router.post('/text', status_code=status.HTTP_200_OK)
-async def text_thread_new(
+@router.post('/mixed', status_code=status.HTTP_200_OK)
+async def mixed_thread_new(
     current_user: Annotated[str, Depends(get_current_user)],
     db: AsyncIOMotorClient = Depends(get_db), # type: ignore
 ):
@@ -40,12 +41,12 @@ async def text_thread_new(
 
     new_thread = client.beta.threads.create()
 
-    await db_add_thread_user_resource(db, current_user.get("username"), new_thread.id)
+    await db_add_thread_user_resource(db, current_user.get("username"), new_thread.id, MIXED_CONVERSATION)
     
     return CreateThreadResourceResp(id=new_thread.id)
 
 
-@router.get('/text', status_code=status.HTTP_200_OK)
+@router.get('/mixed', status_code=status.HTTP_200_OK)
 async def text_thread_list(
     current_user: Annotated[str, Depends(get_current_user)],
     db: AsyncIOMotorClient = Depends(get_db), # type: ignore
@@ -54,22 +55,22 @@ async def text_thread_list(
 
     user_resource = await db_get_user_resource(db, current_user.get("username"))
     
-    return ListThreadResourceResp(threads=user_resource.get("threads"))
+    return ListThreadResourceResp(threads=user_resource.get("mixed_threads"))
 
-@router.delete('/text', status_code=status.HTTP_204_NO_CONTENT)
-async def text_thread_delete(
+@router.delete('/mixed', status_code=status.HTTP_204_NO_CONTENT)
+async def mixed_thread_delete(
     thread_id: str,
     current_user: Annotated[str, Depends(get_current_user)],
     db: AsyncIOMotorClient = Depends(get_db), # type: ignore
 ):
     logging.info(f'Removing thread {thread_id}')
 
-    await db_remove_thread_user_resource(db, current_user.get("username"), thread_id)
+    await db_remove_thread_user_resource(db, current_user.get("username"), thread_id, MIXED_CONVERSATION)
     
     return None
 
-@router.get('/text/{thread_id}/messages', status_code=status.HTTP_200_OK)
-async def text_messages_list(
+@router.get('/mixed/{thread_id}/messages', status_code=status.HTTP_200_OK)
+async def mixed_messages_list(
     thread_id,
     current_user: Annotated[str, Depends(get_current_user)],
 ):
@@ -79,8 +80,8 @@ async def text_messages_list(
     
     return ListMessageResourceResp(messages=thread_messages.data)
 
-@router.post('/text/{thread_id}/messages', status_code=status.HTTP_200_OK)
-async def text_messages_send(
+@router.post('/mixed/{thread_id}/messages', status_code=status.HTTP_200_OK)
+async def mixed_messages_send(
     thread_id,
     content_data: SendMessageResourceReq,
     current_user: Annotated[str, Depends(get_current_user)],
@@ -95,8 +96,8 @@ async def text_messages_send(
 
     return SendMessageResourceResp(id=thread_message.id)
 
-@router.post('/text/{thread_id}/runs', status_code=status.HTTP_200_OK)
-async def text_thread_run(
+@router.post('/mixed/{thread_id}/runs', status_code=status.HTTP_200_OK)
+async def mixed_thread_run(
     thread_id,
     current_user: Annotated[str, Depends(get_current_user)],
 ):
@@ -109,8 +110,8 @@ async def text_thread_run(
 
     return RunThreadResp(id=run.id)
 
-@router.get('/text/{thread_id}/runs/{run_id}', status_code=status.HTTP_200_OK)
-async def text_thread_check(
+@router.get('/mixed/{thread_id}/runs/{run_id}', status_code=status.HTTP_200_OK)
+async def mixed_thread_check(
     thread_id,
     run_id,
     current_user: Annotated[str, Depends(get_current_user)],
@@ -124,8 +125,8 @@ async def text_thread_check(
 
     return RunThreadStatusResp(status=run.status, action=run.required_action)
 
-@router.post('/text/{thread_id}/runs/{run_id}/submit_tool_outputs', status_code=status.HTTP_204_NO_CONTENT)
-async def text_thread_submit_tool(
+@router.post('/mixed/{thread_id}/runs/{run_id}/submit_tool_outputs', status_code=status.HTTP_204_NO_CONTENT)
+async def mixed_thread_submit_tool(
     thread_id,
     run_id,
     req_data: SubmitToolsReq,
@@ -138,7 +139,7 @@ async def text_thread_submit_tool(
         run_id=run_id,
         tool_outputs=[{
             "tool_call_id": req_data.tool_call_id,
-            "output": fetch_search_results(req_data.prompt)
+            "output": fetch_search_results_img(req_data.prompt)
         }]
     )
 

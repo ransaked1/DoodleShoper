@@ -10,6 +10,8 @@ class UserResourceBase(BaseModel):
 
 class UserResourceDB(UserResourceBase, MongoModel):
     id: UUID
-    threads: list
+    text_threads: list
+    mixed_threads: list
+    stketch_threads: list
     create_time: datetime
     deleted: bool

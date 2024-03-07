@@ -16,7 +16,9 @@ from conf.config import Config
 
 from api import health
 from api.v1 import user_resource as user_resource_v1
-from api.v1 import threads_resource as threads_resource_v1
+from api.v1 import text_threads as text_threads_resource_v1
+from api.v1 import mixed_threads as mixed_threads_resource_v1
+from api.v1 import sketch_threads as sketch_threads_resource_v1
 
 import logging
 
@@ -99,7 +101,19 @@ app.include_router(
 )
 
 app.include_router(
-    threads_resource_v1.router,
+    text_threads_resource_v1.router,
+    prefix='/api/v1/threads',
+    tags=["threads resource v1"]
+)
+
+app.include_router(
+    mixed_threads_resource_v1.router,
+    prefix='/api/v1/threads',
+    tags=["threads resource v1"]
+)
+
+app.include_router(
+    sketch_threads_resource_v1.router,
     prefix='/api/v1/threads',
     tags=["threads resource v1"]
 )
