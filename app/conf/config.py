@@ -19,7 +19,8 @@ class Config:
         'openai_assistant': os.getenv('OPENAI_ASSISTANT_ID'),
         'redis_url': os.getenv('REDIS_URL'),
         'google_api_key': os.getenv('GOOGLE_CUSTOM_SEARCH_API_KEY'),
-        'google_engine_id': os.getenv('GOOGLE_SEARCH_ENGINE_ID')
+        'google_engine_id': os.getenv('GOOGLE_SEARCH_ENGINE_ID'),
+        'sd_address': os.getenv('STABLE_DIFFUSION_ADDRESS')
     }
 
     @classmethod

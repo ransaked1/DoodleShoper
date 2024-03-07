@@ -19,7 +19,7 @@ from models.threads import (
     SendMessageResourceResp,
     RunThreadResp,
     RunThreadStatusResp,
-    SubmitToolsReq
+    SubmitToolsReqImg
 )
 
 from common.util import get_current_user
@@ -129,7 +129,7 @@ async def sketch_thread_check(
 async def sketch_thread_submit_tool(
     thread_id,
     run_id,
-    req_data: SubmitToolsReq,
+    req_data: SubmitToolsReqImg,
     current_user: Annotated[str, Depends(get_current_user)],
 ):
     logging.info(f'Submit tool outputs for call {req_data.tool_call_id}')

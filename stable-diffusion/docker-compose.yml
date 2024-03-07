@@ -30,6 +30,8 @@ services:
     profiles: ["auto"]
     build: ./services/AUTOMATIC1111
     image: sd-auto:72
+    networks:
+      - backnet
     environment:
       - CLI_ARGS=--allow-code --medvram --xformers --enable-insecure-extension-access --api
 
@@ -37,6 +39,8 @@ services:
     <<: *automatic
     profiles: ["auto-cpu"]
     deploy: {}
+    networks:
+      - backnet
     environment:
       - CLI_ARGS=--no-half --precision full --allow-code --enable-insecure-extension-access --api
 
@@ -71,3 +75,7 @@ services:
     deploy: {}
     environment:
       - CLI_ARGS=--cpu
+
+networks:
+  backnet:
+    external: true

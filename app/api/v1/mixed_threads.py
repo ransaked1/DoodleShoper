@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Header
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import Annotated
 import logging
+import json
 from conf.config import Config
 
 from db.db import get_db, AsyncIOMotorClient
@@ -19,11 +20,12 @@ from models.threads import (
     SendMessageResourceResp,
     RunThreadResp,
     RunThreadStatusResp,
-    SubmitToolsReq
+    SubmitToolsReqImg
 )
 
 from common.util import get_current_user
 from common.google_search import fetch_search_results_img
+from common.stable_diffusion import generate_image_stable_diffusion
 from common.constants import *
 
 from openai import OpenAI
@@ -125,22 +127,27 @@ async def mixed_thread_check(
 
     return RunThreadStatusResp(status=run.status, action=run.required_action)
 
-@router.post('/mixed/{thread_id}/runs/{run_id}/submit_tool_outputs', status_code=status.HTTP_204_NO_CONTENT)
+# @router.post('/mixed/{thread_id}/runs/{run_id}/submit_tool_outputs', status_code=status.HTTP_204_NO_CONTENT)
+@router.post('/mixed/{thread_id}/runs/{run_id}/submit_tool_outputs', status_code=status.HTTP_200_OK)
 async def mixed_thread_submit_tool(
     thread_id,
     run_id,
-    req_data: SubmitToolsReq,
+    req_data: SubmitToolsReqImg,
     current_user: Annotated[str, Depends(get_current_user)],
 ):
     logging.info(f'Submit tool outputs for call {req_data.tool_call_id}')
 
-    run = client.beta.threads.runs.submit_tool_outputs(
-        thread_id=thread_id,
-        run_id=run_id,
-        tool_outputs=[{
-            "tool_call_id": req_data.tool_call_id,
-            "output": fetch_search_results_img(req_data.prompt)
-        }]
-    )
+    image_object = req_data.image
 
-    return None
+    generated_image = generate_image_stable_diffusion(req_data.prompt, image_object.get("data"))
+
+    # run = client.beta.threads.runs.submit_tool_outputs(
+    #     thread_id=thread_id,
+    #     run_id=run_id,
+    #     tool_outputs=[{
+    #         "tool_call_id": req_data.tool_call_id,
+    #         "output": fetch_search_results_img(generated_image)
+    #     }]
+    # )
+
+    return fetch_search_results_img(generated_image)

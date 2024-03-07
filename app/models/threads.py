@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from pydantic import BaseModel, constr
+from pydantic import BaseModel
 from .model import MongoModel
 
 class CreateThreadResourceResp(MongoModel):
@@ -25,6 +25,11 @@ class RunThreadStatusResp(MongoModel):
     status: str
     action: object | None
 
-class SubmitToolsReq(BaseModel):
+class SubmitToolsReqText(BaseModel):
     tool_call_id: str
     prompt: str
+
+class SubmitToolsReqImg(BaseModel):
+    tool_call_id: str
+    prompt: str
+    image: object | None
