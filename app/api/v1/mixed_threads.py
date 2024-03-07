@@ -150,4 +150,4 @@ async def mixed_thread_submit_tool(
     #     }]
     # )
 
-    return {"image64": generated_image}
+    return {"result": generated_image}
