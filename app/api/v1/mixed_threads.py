@@ -139,7 +139,9 @@ async def mixed_thread_submit_tool(
 
     image_object = req_data.image
 
-    generated_image = generate_image_stable_diffusion(req_data.prompt, image_object.get("data"))
+    # generated_image = generate_image_stable_diffusion(req_data.prompt, image_object.get("data"))
+
+    result = fetch_search_results_img(image_object.get("data"), start=1, num=5, websites=None)
 
     # run = client.beta.threads.runs.submit_tool_outputs(
     #     thread_id=thread_id,
@@ -150,4 +152,4 @@ async def mixed_thread_submit_tool(
     #     }]
     # )
 
-    return {"result": generated_image}
+    return {"result": result}
