@@ -21,18 +21,6 @@ def build_payload_text(query, start=1, num=5, websites=None, **params):
     payload.update(params)
     return payload
 
-# Build the image payload for the Google Lens API request
-def build_payload_img(img_url, num):
-    payload = {
-        'api_key': Config.app_settings.get('serpapi_key'),
-        'engine': 'google_lens',
-        'url': img_url,
-        'hl': 'en',
-        'country': 'gb'
-    }
-
-    return payload
-
 def fetch_search_results_text(query, start=1, num=5, websites=None):
     logging.info(f'Making google search for: {query}...')
 

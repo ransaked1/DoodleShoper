@@ -1,5 +1,17 @@
 from serpapi import GoogleSearch
-from services.google_search import build_payload_img
+from conf.config import Config
+
+# Build the image payload for the Google Lens API request
+def build_payload_img(img_url, num):
+    payload = {
+        'api_key': Config.app_settings.get('serpapi_key'),
+        'engine': 'google_lens',
+        'url': img_url,
+        'hl': 'en',
+        'country': 'gb'
+    }
+
+    return payload
 
 def reverse_image_search(img_url, num):
     search = GoogleSearch(build_payload_img(img_url, num))
