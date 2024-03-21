@@ -25,13 +25,14 @@ import logging
 # Logging
 setup_logging()
 
+# Setup event handlers
 app = FastAPI()
 
 app.add_event_handler("startup", Config.app_settings_validate)
 app.add_event_handler("startup", connect_and_init_db)
 app.add_event_handler("shutdown", close_db_connect)
 
-# openapi schema
+# Openapi schema
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
@@ -45,14 +46,13 @@ def custom_openapi():
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
-
 app.openapi = custom_openapi
+
 
 # HTTP error responses
 @app.exception_handler(BadRequest)
 async def bad_request_handler(req: Request, exc: BadRequest) -> JSONResponse:
     return exc.gen_err_resp()
-
 
 @app.exception_handler(RequestValidationError)
 async def invalid_req_handler(
@@ -70,13 +70,13 @@ async def invalid_req_handler(
         }
     )
 
-
 @app.exception_handler(UnprocessableError)
 async def unprocessable_error_handler(
     req: Request,
     exc: UnprocessableError
 ) -> JSONResponse:
     return exc.gen_err_resp()
+
 
 # API root info
 @app.get("/", include_in_schema=False)
@@ -86,6 +86,7 @@ async def root():
         "status": "live",
         "api_documentation_path": "/docs",
     }
+
 
 # API Path
 app.include_router(

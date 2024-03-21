@@ -22,8 +22,9 @@ from models.threads import (
     SubmitToolsReqText
 )
 
+from services.google_search import fetch_search_results_text
+
 from common.util import get_current_user
-from common.google_search import fetch_search_results_text
 from common.constants import *
 
 from openai import OpenAI

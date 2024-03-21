@@ -24,6 +24,7 @@ class Config:
         'cloudinary_name': os.getenv('CLOUDINARY_NAME'),
         'cloudinary_key': os.getenv('CLOUDINARY_API_KEY'),
         'cloudinary_secret': os.getenv('CLOUDINARY_API_SECRET'),
+        'serpapi_key': os.getenv('SERPAPI_KEY'),
     }
 
     @classmethod

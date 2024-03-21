@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import Annotated
 import logging
 from conf.config import Config
@@ -22,8 +21,9 @@ from models.threads import (
     SubmitToolsReqImg
 )
 
+from services.google_search import fetch_search_results_img
+
 from common.util import get_current_user
-from common.google_search import fetch_search_results_img
 from common.constants import *
 
 from openai import OpenAI

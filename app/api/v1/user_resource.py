@@ -1,9 +1,11 @@
+import aioredis
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status, Header
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-import logging
 from conf.config import Config
 from jose import jwt
 
@@ -18,8 +20,6 @@ from models.login_user import LoginUserResourceResp
 
 from common.util import get_current_user, get_redis_pool
 from common.constants import *
-
-import aioredis
 
 router = APIRouter()
 

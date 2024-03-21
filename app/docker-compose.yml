@@ -29,6 +29,7 @@ services:
       - CLOUDINARY_NAME=${CLOUDINARY_NAME}
       - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
       - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - SERPAPI_KEY=${SERPAPI_KEY}
       - REDIS_URL=redis://redis:6379
     depends_on:
       - mongodb

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import Annotated
 import logging
 import json
@@ -23,9 +22,10 @@ from models.threads import (
     SubmitToolsReqImg
 )
 
+from services.google_search import fetch_search_results_img
+from services.stable_diffusion import generate_image_stable_diffusion
+
 from common.util import get_current_user
-from common.google_search import fetch_search_results_img
-from common.stable_diffusion import generate_image_stable_diffusion
 from common.constants import *
 
 from openai import OpenAI
@@ -33,6 +33,7 @@ from openai import OpenAI
 router = APIRouter()
 
 client = OpenAI(api_key=Config.app_settings.get('openai_key'))
+
 
 @router.post('/mixed', status_code=status.HTTP_200_OK)
 async def mixed_thread_new(
@@ -59,6 +60,7 @@ async def text_thread_list(
     
     return ListThreadResourceResp(threads=user_resource.get("mixed_threads"))
 
+
 @router.delete('/mixed', status_code=status.HTTP_204_NO_CONTENT)
 async def mixed_thread_delete(
     thread_id: str,
@@ -71,6 +73,7 @@ async def mixed_thread_delete(
     
     return None
 
+
 @router.get('/mixed/{thread_id}/messages', status_code=status.HTTP_200_OK)
 async def mixed_messages_list(
     thread_id,
@@ -81,6 +84,7 @@ async def mixed_messages_list(
     thread_messages = client.beta.threads.messages.list(thread_id, limit=50)
     
     return ListMessageResourceResp(messages=thread_messages.data)
+
 
 @router.post('/mixed/{thread_id}/messages', status_code=status.HTTP_200_OK)
 async def mixed_messages_send(
@@ -98,6 +102,7 @@ async def mixed_messages_send(
 
     return SendMessageResourceResp(id=thread_message.id)
 
+
 @router.post('/mixed/{thread_id}/runs', status_code=status.HTTP_200_OK)
 async def mixed_thread_run(
     thread_id,
@@ -111,6 +116,7 @@ async def mixed_thread_run(
     )
 
     return RunThreadResp(id=run.id)
+
 
 @router.get('/mixed/{thread_id}/runs/{run_id}', status_code=status.HTTP_200_OK)
 async def mixed_thread_check(
@@ -127,8 +133,8 @@ async def mixed_thread_check(
 
     return RunThreadStatusResp(status=run.status, action=run.required_action)
 
-# @router.post('/mixed/{thread_id}/runs/{run_id}/submit_tool_outputs', status_code=status.HTTP_204_NO_CONTENT)
-@router.post('/mixed/{thread_id}/runs/{run_id}/submit_tool_outputs', status_code=status.HTTP_200_OK)
+
+@router.post('/mixed/{thread_id}/runs/{run_id}/submit_tool_outputs', status_code=status.HTTP_204_NO_CONTENT)
 async def mixed_thread_submit_tool(
     thread_id,
     run_id,
@@ -139,17 +145,13 @@ async def mixed_thread_submit_tool(
 
     image_object = req_data.image
 
-    # generated_image = generate_image_stable_diffusion(req_data.prompt, image_object.get("data"))
+    generated_image = generate_image_stable_diffusion(req_data.prompt, image_object.get("data"))
 
-    result = fetch_search_results_img(image_object.get("data"), start=1, num=5, websites=None)
-
-    # run = client.beta.threads.runs.submit_tool_outputs(
-    #     thread_id=thread_id,
-    #     run_id=run_id,
-    #     tool_outputs=[{
-    #         "tool_call_id": req_data.tool_call_id,
-    #         "output": fetch_search_results_img(generated_image)
-    #     }]
-    # )
-
-    return {"result": result}
+    run = client.beta.threads.runs.submit_tool_outputs(
+        thread_id=thread_id,
+        run_id=run_id,
+        tool_outputs=[{
+            "tool_call_id": req_data.tool_call_id,
+            "output": fetch_search_results_img(generated_image, start=1, num=5, websites=None)
+        }]
+    )

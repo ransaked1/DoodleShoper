@@ -6,10 +6,7 @@ from common.constants import *
 
 url = Config.app_settings.get('sd_address')
 
-def generate_image_stable_diffusion(prompt, base64_img):
-
-    logging.info(f"Searching for image with prompt: {prompt}\n")
-
+def build_payload(prompt, base64_img):
     # A1111 payload
     payload = {
         "prompt": prompt,
@@ -29,6 +26,12 @@ def generate_image_stable_diffusion(prompt, base64_img):
             }
         }
     }
+
+def generate_image_stable_diffusion(prompt, base64_img):
+
+    logging.info(f"Searching for image with prompt: {prompt}\n")
+
+    payload = build_payload(prompt, base64_img)
 
     logging.info(f"Sending to {url}/sdapi/v1/txt2img")
 
