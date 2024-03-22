@@ -51,7 +51,7 @@ services:
       - "27017:27017"
     container_name: ${MONGODB_SERVICE_NAME}
     volumes: 
-      - /tmp/mongo:/data/db
+      - ./data/db:/data/db
     restart: unless-stopped
     environment:
       - MAX_CONNECTIONS_COUNT=10

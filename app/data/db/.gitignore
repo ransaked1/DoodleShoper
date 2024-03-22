@@ -1,0 +1,3 @@
+# Ignore the contents of this folder storing user data
+*
+!.gitignore
