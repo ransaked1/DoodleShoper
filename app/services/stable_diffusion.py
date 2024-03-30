@@ -27,9 +27,11 @@ def build_payload(prompt, base64_img):
         }
     }
 
+    return payload
+
 def generate_image_stable_diffusion(prompt, base64_img):
 
-    logging.info(f"Searching for image with prompt: {prompt}\n")
+    logging.info(f"Searching for image with prompt: {prompt}")
 
     payload = build_payload(prompt, base64_img)
 

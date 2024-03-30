@@ -50,7 +50,7 @@ def fetch_search_results_img(img_base64, num=5, websites=None):
 
     search_results_string = reverse_image_search(img_url, num)
 
-    destroy_image_web(img_uuid)
+    # destroy_image_web(img_uuid)
 
     logging.info(f'Results: {search_results_string}')
     return search_results_string
