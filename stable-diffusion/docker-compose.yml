@@ -33,7 +33,7 @@ services:
     networks:
       - backnet
     environment:
-      - CLI_ARGS=--allow-code --medvram --xformers --enable-insecure-extension-access --api
+      - CLI_ARGS=--allow-code --medvram --xformers --enable-insecure-extension-access --opt-split-attention --opt-sdp-attention --api
 
   auto-cpu:
     <<: *automatic
@@ -42,7 +42,7 @@ services:
     networks:
       - backnet
     environment:
-      - CLI_ARGS=--no-half --precision full --allow-code --enable-insecure-extension-access --api
+      - CLI_ARGS=--no-half --precision full --allow-code --enable-insecure-extension-access --opt-split-attention --opt-sdp-attention --api
 
   invoke: &invoke
     <<: *base_service
