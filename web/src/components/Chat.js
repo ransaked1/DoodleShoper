@@ -3,7 +3,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useNavigate  } from 'react-router-dom';
 
-const LoggedIn = () => {
+const Chat = () => {
     const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -30,4 +30,4 @@ const LoggedIn = () => {
   );
 };
 
-export default LoggedIn;
+export default Chat;

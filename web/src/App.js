@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import Login from './components/Login';
 import Signup from './components/Signup';
-import LoggedIn from './components/LoggedIn';
+import Chat from './components/Chat';
 
 const App = () => {
   const isLoggedIn = !!Cookies.get('accessToken');
@@ -15,7 +15,7 @@ const App = () => {
         <Route path="/" element={isLoggedIn ? <Navigate to="/chat" /> : <Navigate to="/auth" />} />
         <Route path="/auth" element={<Login />} />
         <Route path="/auth/signup" element={<Signup />} />
-        <Route path="/chat" element={isLoggedIn ? <LoggedIn /> : <Login />} />
+        <Route path="/chat" element={isLoggedIn ? <Chat /> : <Login />} />
       </Routes>
     </Router>
   );
