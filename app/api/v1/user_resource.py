@@ -28,16 +28,16 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @router.post('/signup', response_model=RegisterUserResourceResp, status_code=status.HTTP_201_CREATED)
 async def signup(
-    user_resource_data: RegisterUserResourceReq,
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: AsyncIOMotorClient = Depends(get_db) # type: ignore
 ):
     logging.info('Received create user resource request')
 
     # Hash password and add user to database
-    hashed_password = pwd_context.hash(user_resource_data.password)
+    hashed_password = pwd_context.hash(form_data.password)
     user_resource = await db_create_user_resouce(
         db,
-        user_resource_data.username,
+        form_data.username,
         hashed_password
     )
 

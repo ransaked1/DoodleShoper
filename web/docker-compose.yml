@@ -1,4 +1,4 @@
-version: '3'
+version: '3.9'
 services:
   web:
     stdin_open: true
@@ -7,6 +7,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    networks:
+      - frontnet
+      - default
     ports:
       - '3000:3000'
     volumes:
@@ -21,3 +24,7 @@ services:
       - /app/node_modules
       - .:/app
     command: ['npm', 'run', 'test']
+
+networks:
+  frontnet:
+    external: true

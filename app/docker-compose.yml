@@ -8,6 +8,7 @@ services:
     container_name: app
     networks:
       - backnet
+      - frontnet
       - default
     ports:
       - "8080:8080"
@@ -84,4 +85,6 @@ volumes:
 
 networks:
   backnet:
+    external: true
+  frontnet:
     external: true

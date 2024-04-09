@@ -11,3 +11,12 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.highlighted-link {
+  color: blue; /* Change color to your preference */
+  cursor: pointer;
+}
+
+.highlighted-link:hover {
+  text-decoration: underline;
+}

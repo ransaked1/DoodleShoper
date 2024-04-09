@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.openapi.utils import get_openapi
+from fastapi.middleware.cors import CORSMiddleware
 
 from common.error import BadRequest, UnprocessableError
 from db.db import connect_and_init_db, close_db_connect
@@ -48,6 +49,14 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
+# CORS setup
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['http://localhost:3000'],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
+)
 
 # HTTP error responses
 @app.exception_handler(BadRequest)
