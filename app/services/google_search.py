@@ -11,6 +11,7 @@ from services.serpapi import reverse_image_search
 # Build the text payload for the Google Search API request
 def build_payload_text(query, start=1, num=5, websites=None, **params):
     payload = {
+        'searchType': 'image',
         'key': Config.app_settings.get('google_api_key'),
         'cx': Config.app_settings.get('google_engine_id'),
         'q': query,

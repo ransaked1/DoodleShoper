@@ -22,10 +22,11 @@ code {
 }
 
 .top-bar {
+  flex: 0 0 auto; /* Fix the top bar's size, it won't grow or shrink */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
+  padding: 5px;
 }
 
 .options-container {
@@ -76,8 +77,13 @@ code {
   flex-direction: column;
 }
 
+.messages-container-wrapper {
+  flex: 1; /* Ensure it expands to fit its content */
+  overflow: hidden; /* Prevent overflow scrolling of the entire page */
+}
+
 .messages-container {
-  flex: 1;
+  height: 760px;
   overflow-y: auto; /* Enable scrolling if messages overflow */
   display: flex;
   flex-direction: column;

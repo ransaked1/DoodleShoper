@@ -111,6 +111,7 @@ const handleKeyPress = (event) => {
       console.log('Message sent:', response.data);
       // Clear the input field after sending the message
       setNewMessage('');
+      fetchMessages(selectedThread)
       // Start processing the message by creating a run
       await createAndProcessRun(selectedThread);
     } catch (error) {
@@ -143,20 +144,22 @@ const handleKeyPress = (event) => {
   const checkRunStatus = async (runId, threadId) => {
     try {
       const accessToken = Cookies.get('accessToken');
-      let status = '';
-      while (status !== 'completed') {
-        const response = await axios.get(
-          `http://localhost:8080/api/v1/threads/text/${threadId}/runs/${runId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        status = response.data.status;
-        if (status === 'requires_action') {
-          const { action } = response.data;
-          if (action && action.submit_tool_outputs && action.submit_tool_outputs.tool_calls) {
+      let intervalId = setInterval(async () => {
+        try {
+          const response = await axios.get(
+            `http://localhost:8080/api/v1/threads/text/${threadId}/runs/${runId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }
+          );
+          const { status, action } = response.data;
+          if (status === 'completed') {
+            clearInterval(intervalId); // Stop the interval when run is completed
+            // Update messages after completion
+            fetchMessages(threadId);
+          } else if (status === 'requires_action' && action && action.submit_tool_outputs && action.submit_tool_outputs.tool_calls) {
             const toolCall = action.submit_tool_outputs.tool_calls[0];
             if (toolCall && toolCall.function && toolCall.function.arguments) {
               const { prompt } = JSON.parse(toolCall.function.arguments);
@@ -165,14 +168,13 @@ const handleKeyPress = (event) => {
               await submitToolOutputs(runId, toolCallId, prompt);
             }
           }
+        } catch (error) {
+          console.error('Failed to check run status', error);
+          clearInterval(intervalId); // Stop the interval in case of error
         }
-        // Wait for some time before checking again
-        await new Promise((resolve) => setTimeout(resolve, 300));
-      }
-      // Update messages after completion
-      fetchMessages(threadId);
+      }, 1000); // Check every 1 second
     } catch (error) {
-      console.error('Failed to check run status', error);
+      console.error('Failed to start checking run status', error);
     }
   };
   
@@ -266,12 +268,14 @@ const handleKeyPress = (event) => {
           </ul>
         </div>
         <div className="chat-container">
-          <div className="messages-container">
-            {messages.slice().reverse().map((message, index) => (
-              <div key={index} className={`message ${message.role}`}>
-                <p>{message.content[0].text.value}</p> {/* Access the text value here */}
-              </div>
-            ))}
+          <div className="messages-container-wrapper">
+            <div className="messages-container">
+              {messages.slice().reverse().map((message, index) => (
+                <div key={index} className={`message ${message.role}`}>
+                  <p>{message.content[0].text.value}</p>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="message-input">
             <textarea
