@@ -10,6 +10,7 @@ const Text = () => {
   const [selectedThread, setSelectedThread] = useState(0);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchThreads();
@@ -22,6 +23,14 @@ const Text = () => {
       fetchMessages();
     }
   }, [thread_id, selectedThread]);
+
+const handleKeyPress = (event) => {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    // Prevent default behavior of Enter key (new line) and send the message
+    event.preventDefault();
+    handleMessageSend();
+  }
+};
 
   const fetchThreads = async () => {
     try {
@@ -37,10 +46,10 @@ const Text = () => {
     }
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = async (threadId) => {
     try {
       const accessToken = Cookies.get('accessToken');
-      const response = await axios.get(`http://localhost:8080/api/v1/threads/text/${thread_id}/messages`, {
+      const response = await axios.get(`http://localhost:8080/api/v1/threads/text/${threadId}/messages`, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
@@ -83,6 +92,12 @@ const Text = () => {
   };
 
   const handleMessageSend = async () => {
+    if (!newMessage.trim()) {
+      // If the message is empty or contains only whitespace characters, do nothing
+      return;
+    }
+
+    setLoading(true); // Set loading to true while processing the message
     try {
       const accessToken = Cookies.get('accessToken');
       const response = await axios.post(`http://localhost:8080/api/v1/threads/text/${selectedThread}/messages`, {
@@ -96,25 +111,93 @@ const Text = () => {
       console.log('Message sent:', response.data);
       // Clear the input field after sending the message
       setNewMessage('');
+      // Start processing the message by creating a run
+      await createAndProcessRun(selectedThread);
     } catch (error) {
       console.error('Failed to send message', error);
+    } finally {
+      setLoading(false); // Set loading back to false after processing the message
     }
+  };
+
+  const createAndProcessRun = async (threadId) => {
     try {
-        const accessToken = Cookies.get('accessToken');
-        const response = await axios.get(`http://localhost:8080/api/v1/threads/text/${selectedThread}/messages`, {
+      const accessToken = Cookies.get('accessToken');
+      const runResponse = await axios.post(
+        `http://localhost:8080/api/v1/threads/text/${threadId}/runs`,
+        null,
+        {
           headers: {
-            Authorization: `Bearer ${accessToken}`
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      const runId = runResponse.data.id;
+      // Start checking the status of the run
+      await checkRunStatus(runId, threadId);
+    } catch (error) {
+      console.error('Failed to create and process run', error);
+    }
+  };
+
+  const checkRunStatus = async (runId, threadId) => {
+    try {
+      const accessToken = Cookies.get('accessToken');
+      let status = '';
+      while (status !== 'completed') {
+        const response = await axios.get(
+          `http://localhost:8080/api/v1/threads/text/${threadId}/runs/${runId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           }
-        });
-        setMessages(response.data.messages);
-      } catch (error) {
-        console.error('Failed to fetch messages', error);
+        );
+        status = response.data.status;
+        if (status === 'requires_action') {
+          const { action } = response.data;
+          if (action && action.submit_tool_outputs && action.submit_tool_outputs.tool_calls) {
+            const toolCall = action.submit_tool_outputs.tool_calls[0];
+            if (toolCall && toolCall.function && toolCall.function.arguments) {
+              const { prompt } = JSON.parse(toolCall.function.arguments);
+              const toolCallId = toolCall.id;
+              // Submit tool outputs
+              await submitToolOutputs(runId, toolCallId, prompt);
+            }
+          }
+        }
+        // Wait for some time before checking again
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+      // Update messages after completion
+      fetchMessages(threadId);
+    } catch (error) {
+      console.error('Failed to check run status', error);
+    }
+  };
+  
+
+  const submitToolOutputs = async (runId, toolCallId, prompt) => {
+    try {
+      const accessToken = Cookies.get('accessToken');
+      await axios.post(
+        `http://localhost:8080/api/v1/threads/text/${selectedThread}/runs/${runId}/submit_tool_outputs`,
+        {
+          tool_call_id: toolCallId,
+          prompt,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+    } catch (error) {
+      console.error('Failed to submit tool outputs', error);
     }
   };
 
   const handleThreadClick = async (threadId) => {
-    // Handle the click event for a thread
-    // For example, navigate to the details page of the thread
     setSelectedThread(threadId);
     try {
         const accessToken = Cookies.get('accessToken');
@@ -194,9 +277,14 @@ const Text = () => {
             <textarea
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={handleKeyPress}
               placeholder="Type your message..."
             />
-            <button onClick={handleMessageSend}>Send</button>
+            {loading ? (
+              <div>Loading...</div>
+            ) : (
+              <button onClick={handleMessageSend}>Send</button>
+            )}
           </div>
         </div>
       </div>
