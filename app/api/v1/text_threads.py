@@ -1,5 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, status
 from typing import Annotated
 import logging
 from conf.config import Config
@@ -97,7 +96,7 @@ async def text_messages_send(
 
     return SendMessageResourceResp(id=thread_message.id)
 
-@router.post('/text/{thread_id}/messages/intro', status_code=status.HTTP_200_OK)
+@router.post('/text/{thread_id}/messages/assistant', status_code=status.HTTP_200_OK)
 async def text_messages_send(
     thread_id,
     content_data: SendMessageResourceReq,

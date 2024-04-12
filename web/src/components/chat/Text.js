@@ -76,7 +76,7 @@ const handleKeyPress = (event) => {
     const newThreadId = newThreadResponse.data.id;
 
     // Send a default message from the assistant to the new thread
-    await axios.post(`http://localhost:8080/api/v1/threads/text/${newThreadId}/messages/intro`, {
+    await axios.post(`http://localhost:8080/api/v1/threads/text/${newThreadId}/messages/assistant`, {
       content: "Hello, I am here to assist you"
     }, {
       headers: {
@@ -116,9 +116,7 @@ const handleKeyPress = (event) => {
       await createAndProcessRun(selectedThread);
     } catch (error) {
       console.error('Failed to send message', error);
-    } finally {
-      setLoading(false); // Set loading back to false after processing the message
-    }
+    } 
   };
 
   const createAndProcessRun = async (threadId) => {
@@ -157,6 +155,7 @@ const handleKeyPress = (event) => {
           const { status, action } = response.data;
           if (status === 'completed') {
             clearInterval(intervalId); // Stop the interval when run is completed
+            setLoading(false); // Set loading to false after run completion
             // Update messages after completion
             fetchMessages(threadId);
           } else if (status === 'requires_action' && action && action.submit_tool_outputs && action.submit_tool_outputs.tool_calls) {
@@ -248,6 +247,28 @@ const handleKeyPress = (event) => {
     }
   };
 
+  const transformMessageContent = (messageContent) => {
+    // Regular expression to match text within square brackets followed by a link within round brackets
+    const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    // Replace matched text with anchor tags
+    const transformedContent = messageContent.replace(regex, (match, title, link) => {
+      const sanitizedLink = link.replace(/-/g, '–'); // Replace "-" with a similar-looking symbol
+      const linkText = `<a href="${sanitizedLink}" target="_blank">${title}</a>`;
+      return linkText.replace(/-/g, '–') ;
+    });
+
+    // Replace "-" outside links with line breaks
+    const finalContent = transformedContent.replace(/-(?![^\[]*\])/g, '<br/>');
+
+    // Add a line break after the last link
+    const lastIndex = finalContent.lastIndexOf('</a>');
+    if (lastIndex !== -1) {
+        return finalContent.substring(0, lastIndex + 4) + '<br/>' + finalContent.substring(lastIndex + 4);
+    }
+
+    return finalContent;
+};
+
   return (
     <div className="container">
       <div className="top-bar">
@@ -272,7 +293,7 @@ const handleKeyPress = (event) => {
             <div className="messages-container">
               {messages.slice().reverse().map((message, index) => (
                 <div key={index} className={`message ${message.role}`}>
-                  <p>{message.content[0].text.value}</p>
+                  <p dangerouslySetInnerHTML={{ __html: transformMessageContent(message.content[0].text.value) }} />
                 </div>
               ))}
             </div>

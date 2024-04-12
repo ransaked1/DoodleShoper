@@ -16,7 +16,9 @@ def build_payload_text(query, start=1, num=5, websites=None, **params):
         'cx': Config.app_settings.get('google_engine_id'),
         'q': query,
         'start': start,
-        'num': num
+        'num': num,
+        'region': 'gb',
+        'safeSearch': 'on'
     }
 
     payload.update(params)
@@ -32,7 +34,7 @@ def fetch_search_results_text(query, start=1, num=5, websites=None):
         raise InternalError([{"message": f"Google Search API failed: {response.text}"}])
 
     # Extract the URLs
-    search_result_urls = [item['link'] for item in response.json().get('items', [])]
+    search_result_urls = [item['image']['contextLink'] for item in response.json().get('items', [])]
 
     # Convert the list of URLs to a string
     search_results_string = ', '.join(search_result_urls)

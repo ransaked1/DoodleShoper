@@ -35,10 +35,12 @@ services:
     depends_on:
       - mongodb
       - redis
+      - vc_db
 
   redis:
     image: redis:alpine
     networks:
+      - backnet
       - default
     ports:
       - "6379:6379"
@@ -47,6 +49,7 @@ services:
   mongodb:
     image: mongo:latest
     networks:
+      - backnet
       - default
     ports:
       - "27017:27017"
