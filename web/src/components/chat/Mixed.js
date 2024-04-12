@@ -17,6 +17,7 @@ const Mixed = () => {
   const [toolCallId, setToolCallId] = useState('');
   const [runId, setRunId] = useState('');
   const [overlayVisible, setOverlayVisible] = useState(false);
+  const [imageProcessing, setImageProcessing] = useState(false);
 
   // Reference to the canvas element
   const canvasRef = useRef(null);
@@ -55,7 +56,9 @@ const Mixed = () => {
 
   // Function to show overlay popup
   const showOverlay = () => {
-    setOverlayVisible(true);
+    if (!overlayVisible) {
+      setOverlayVisible(true);
+    }
   };
 
   // Function to hide overlay popup
@@ -211,7 +214,7 @@ const handleKeyPress = (event) => {
             fetchMessages(threadId);
           } else if (status === 'requires_action' && action && action.submit_tool_outputs && action.submit_tool_outputs.tool_calls) {
             const toolCall = action.submit_tool_outputs.tool_calls[0];
-            if (toolCall && toolCall.function && toolCall.function.arguments) {
+            if (toolCall && toolCall.function && toolCall.function.arguments && !imageProcessing) {
               const { prompt } = JSON.parse(toolCall.function.arguments);
               const toolCallId = toolCall.id;
               // Submit tool outputs
@@ -238,6 +241,7 @@ const handleKeyPress = (event) => {
 
       const canvasDataUrl = canvasRef.current.toDataURL(); // Get image data URL from canvas
       const base64Image = canvasDataUrl.split(',')[1]; // Extract base64 image data
+      setImageProcessing(true);
       hideOverlay();
       await axios.post(
         `http://localhost:8080/api/v1/threads/mixed/${selectedThread}/runs/${runId}/submit_tool_outputs`,
@@ -255,6 +259,7 @@ const handleKeyPress = (event) => {
           },
         }
       );
+      setImageProcessing(false);
     } catch (error) {
       console.error('Failed to submit tool outputs', error);
     }
