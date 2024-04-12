@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -11,6 +11,57 @@ const Mixed = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const [drawing, setDrawing] = useState(false);
+  const [prompt, setPrompt] = useState('');
+  const [toolCallId, setToolCallId] = useState('');
+  const [runId, setRunId] = useState('');
+  const [overlayVisible, setOverlayVisible] = useState(false);
+
+  // Reference to the canvas element
+  const canvasRef = useRef(null);
+
+  // Function to handle drawing
+  const handleDrawingStart = (event) => {
+    setDrawing(true);
+    const ctx = canvasRef.current.getContext('2d');
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+  };
+
+  const handleDrawing = (event) => {
+    if (!drawing) return;
+
+    const ctx = canvasRef.current.getContext('2d');
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  };
+
+  const handleDrawingEnd = () => {
+    setDrawing(false);
+  };
+
+  const clearCanvas = () => {
+    const ctx = canvasRef.current.getContext('2d');
+    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+  };
+
+  // Function to show overlay popup
+  const showOverlay = () => {
+    setOverlayVisible(true);
+  };
+
+  // Function to hide overlay popup
+  const hideOverlay = () => {
+    setOverlayVisible(false);
+  };
 
   useEffect(() => {
     fetchThreads();
@@ -164,7 +215,10 @@ const handleKeyPress = (event) => {
               const { prompt } = JSON.parse(toolCall.function.arguments);
               const toolCallId = toolCall.id;
               // Submit tool outputs
-              await submitToolOutputs(runId, toolCallId, prompt);
+              setPrompt(prompt);
+              setToolCallId(toolCallId);
+              setRunId(runId);
+              showOverlay();
             }
           }
         } catch (error) {
@@ -181,11 +235,19 @@ const handleKeyPress = (event) => {
   const submitToolOutputs = async (runId, toolCallId, prompt) => {
     try {
       const accessToken = Cookies.get('accessToken');
+
+      const canvasDataUrl = canvasRef.current.toDataURL(); // Get image data URL from canvas
+      const base64Image = canvasDataUrl.split(',')[1]; // Extract base64 image data
+      hideOverlay();
       await axios.post(
         `http://localhost:8080/api/v1/threads/mixed/${selectedThread}/runs/${runId}/submit_tool_outputs`,
         {
           tool_call_id: toolCallId,
           prompt,
+          image: {
+            "mime": "image/png",
+            "data": base64Image
+          }
         },
         {
           headers: {
@@ -276,6 +338,28 @@ const handleKeyPress = (event) => {
         <h2>User is logged in</h2>
         <button onClick={handleLogout}>Logout</button>
       </div>
+      {overlayVisible && (
+        <div className="overlay">
+          <div className="overlay-content">
+            <h3>Draw your image</h3>
+            {/* Drawing canvas */}
+            <canvas
+              ref={canvasRef}
+              width={512}
+              height={512}
+              onMouseDown={handleDrawingStart}
+              onMouseMove={handleDrawing}
+              onMouseUp={handleDrawingEnd}
+            />
+
+            {/* Tool buttons */}
+            <div className="tools">
+              <button onClick={clearCanvas}>Clear</button>
+              <button onClick={() => submitToolOutputs(runId, toolCallId, prompt)}>{'Submit'}</button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="content">
         <div className="side-panel">
           <button onClick={handleNewThread}>Create New Thread</button>

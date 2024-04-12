@@ -102,6 +102,22 @@ async def mixed_messages_send(
 
     return SendMessageResourceResp(id=thread_message.id)
 
+@router.post('/mixed/{thread_id}/messages/assistant', status_code=status.HTTP_200_OK)
+async def text_messages_send(
+    thread_id,
+    content_data: SendMessageResourceReq,
+    current_user: Annotated[str, Depends(get_current_user)],
+):
+    logging.info(f'Into message to thread {thread_id}')
+
+    thread_message = client.beta.threads.messages.create(
+        thread_id,
+        role="assistant",
+        content=content_data.content,
+    )
+
+    return SendMessageResourceResp(id=thread_message.id)
+
 
 @router.post('/mixed/{thread_id}/runs', status_code=status.HTTP_200_OK)
 async def mixed_thread_run(

@@ -33,10 +33,10 @@ const Chat = () => {
           Text-Based
         </Link>
         <Link to="/chat/mixed" className="option-card">
-          Mixed
-        </Link>
-        <Link to="/chat/sketch" className="option-card">
           Sketch-Based
+        </Link>
+        <Link to="" className="option-card">
+          Sketch-Based <br/>with SignWriting <br/> (Not yet available)
         </Link>
       </div>
     </div>
