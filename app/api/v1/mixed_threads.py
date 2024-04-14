@@ -22,7 +22,7 @@ from models.threads import (
     SubmitToolsReqImg
 )
 
-from services.google_search import fetch_search_results_img
+from services.google_search import fetch_search_results_img, fetch_search_results_text
 from services.stable_diffusion import generate_image_stable_diffusion
 
 from common.util import get_current_user
@@ -161,13 +161,25 @@ async def mixed_thread_submit_tool(
 
     image_object = req_data.image
 
-    generated_image = generate_image_stable_diffusion(req_data.prompt, image_object.get("data"))
+    if image_object is None:
 
-    run = client.beta.threads.runs.submit_tool_outputs(
-        thread_id=thread_id,
-        run_id=run_id,
-        tool_outputs=[{
-            "tool_call_id": req_data.tool_call_id,
-            "output": fetch_search_results_img(generated_image, num=5, websites=None)
-        }]
-    )
+        client.beta.threads.runs.submit_tool_outputs(
+            thread_id=thread_id,
+            run_id=run_id,
+            tool_outputs=[{
+                "tool_call_id": req_data.tool_call_id,
+                "output": fetch_search_results_text(req_data.prompt)
+            }]
+        )
+
+    else:
+        generated_image = generate_image_stable_diffusion(req_data.prompt, image_object.get("data"))
+
+        client.beta.threads.runs.submit_tool_outputs(
+            thread_id=thread_id,
+            run_id=run_id,
+            tool_outputs=[{
+                "tool_call_id": req_data.tool_call_id,
+                "output": fetch_search_results_img(generated_image, num=5, websites=None)
+            }]
+        )

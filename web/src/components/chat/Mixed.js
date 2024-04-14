@@ -14,13 +14,16 @@ const Mixed = () => {
 
   const [drawing, setDrawing] = useState(false);
   const [prompt, setPrompt] = useState('');
-  const [toolCallId, setToolCallId] = useState('');
+  const [toolCallIds, setToolCallIds] = useState('');
   const [runId, setRunId] = useState('');
   const [overlayVisible, setOverlayVisible] = useState(false);
+  const [overlayShownOnce, setOverlayShownOnce] = useState(false);
   const [imageProcessing, setImageProcessing] = useState(false);
 
   // Reference to the canvas element
   const canvasRef = useRef(null);
+
+  const introMessage = "Hello! I'm DoodleShoper, your AI powered assistant. I'm here to help you in finding the perfect product. What are you searching for today?"
 
   // Function to handle drawing
   const handleDrawingStart = (event) => {
@@ -56,8 +59,9 @@ const Mixed = () => {
 
   // Function to show overlay popup
   const showOverlay = () => {
-    if (!overlayVisible) {
+    if (!overlayVisible && !overlayShownOnce) {
       setOverlayVisible(true);
+      setOverlayShownOnce(true);
     }
   };
 
@@ -131,7 +135,7 @@ const handleKeyPress = (event) => {
 
     // Send a default message from the assistant to the new thread
     await axios.post(`http://localhost:8080/api/v1/threads/mixed/${newThreadId}/messages/assistant`, {
-      content: "Hello, I am here to assist you"
+      content: introMessage
     }, {
       headers: {
         Authorization: `Bearer ${accessToken}`
@@ -210,23 +214,24 @@ const handleKeyPress = (event) => {
           if (status === 'completed') {
             clearInterval(intervalId); // Stop the interval when run is completed
             setLoading(false); // Set loading to false after run completion
+            setOverlayShownOnce(false);
             // Update messages after completion
             fetchMessages(threadId);
           } else if (status === 'requires_action' && action && action.submit_tool_outputs && action.submit_tool_outputs.tool_calls) {
             const toolCall = action.submit_tool_outputs.tool_calls[0];
             if (toolCall && toolCall.function && toolCall.function.arguments && !imageProcessing) {
               const { prompt } = JSON.parse(toolCall.function.arguments);
-              const toolCallId = toolCall.id;
+              const toolCallIds = action.submit_tool_outputs.tool_calls.map(toolCall => toolCall.id);
               // Submit tool outputs
               setPrompt(prompt);
-              setToolCallId(toolCallId);
+              setToolCallIds(toolCallIds);
               setRunId(runId);
               showOverlay();
             }
           }
         } catch (error) {
           console.error('Failed to check run status', error);
-          clearInterval(intervalId); // Stop the interval in case of error
+          clearInterval(intervalId);
         }
       }, 1000); // Check every 1 second
     } catch (error) {
@@ -235,30 +240,37 @@ const handleKeyPress = (event) => {
   };
   
 
-  const submitToolOutputs = async (runId, toolCallId, prompt) => {
+  const submitToolOutputs = async (runId, toolCallIds, prompt, includeImage) => {
     try {
       const accessToken = Cookies.get('accessToken');
 
       const canvasDataUrl = canvasRef.current.toDataURL(); // Get image data URL from canvas
-      const base64Image = canvasDataUrl.split(',')[1]; // Extract base64 image data
+
+      let base64Image = null;
+      if (includeImage) {
+        base64Image = canvasDataUrl.split(',')[1]; // Extract base64 image data
+      }
+      
       setImageProcessing(true);
       hideOverlay();
-      await axios.post(
-        `http://localhost:8080/api/v1/threads/mixed/${selectedThread}/runs/${runId}/submit_tool_outputs`,
-        {
-          tool_call_id: toolCallId,
-          prompt,
-          image: {
-            "mime": "image/png",
-            "data": base64Image
-          }
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
+      await Promise.all(toolCallIds.map(async (toolCallId) => {
+        await axios.post(
+          `http://localhost:8080/api/v1/threads/mixed/${selectedThread}/runs/${runId}/submit_tool_outputs`,
+          {
+            tool_call_id: toolCallId,
+            prompt,
+            image: {
+              "mime": "image/png",
+              "data": base64Image
+            }
           },
-        }
-      );
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+      }));
       setImageProcessing(false);
     } catch (error) {
       console.error('Failed to submit tool outputs', error);
@@ -360,7 +372,8 @@ const handleKeyPress = (event) => {
             {/* Tool buttons */}
             <div className="tools">
               <button onClick={clearCanvas}>Clear</button>
-              <button onClick={() => submitToolOutputs(runId, toolCallId, prompt)}>{'Submit'}</button>
+              <button onClick={() => submitToolOutputs(runId, toolCallIds, prompt, true)}>{'Submit'}</button>
+              <button onClick={() => submitToolOutputs(runId, toolCallIds, prompt, false)}>{'No Image'}</button>
             </div>
           </div>
         </div>

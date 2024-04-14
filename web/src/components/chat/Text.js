@@ -12,6 +12,8 @@ const Text = () => {
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const introMessage = "Hello! I'm DoodleShoper, your AI powered assistant. I'm here to help you in finding the perfect product. What are you searching for today?"
+
   useEffect(() => {
     fetchThreads();
   }, []);
@@ -77,7 +79,7 @@ const handleKeyPress = (event) => {
 
     // Send a default message from the assistant to the new thread
     await axios.post(`http://localhost:8080/api/v1/threads/text/${newThreadId}/messages/assistant`, {
-      content: "Hello, I am here to assist you"
+      content: introMessage
     }, {
       headers: {
         Authorization: `Bearer ${accessToken}`
