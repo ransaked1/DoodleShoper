@@ -88,6 +88,8 @@ const handleKeyPress = (event) => {
     
     // After sending the default message, fetch the messages for the new thread
     fetchMessages(newThreadId);
+
+    setSelectedThread(newThreadId);
     } catch (error) {
       console.error('Failed to create new thread', error);
     }

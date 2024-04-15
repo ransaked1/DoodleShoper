@@ -161,7 +161,9 @@ async def mixed_thread_submit_tool(
 
     image_object = req_data.image
 
-    if image_object is None:
+    print(image_object)
+
+    if image_object.get("data") is None:
 
         client.beta.threads.runs.submit_tool_outputs(
             thread_id=thread_id,
@@ -171,7 +173,6 @@ async def mixed_thread_submit_tool(
                 "output": fetch_search_results_text(req_data.prompt)
             }]
         )
-
     else:
         generated_image = generate_image_stable_diffusion(req_data.prompt, image_object.get("data"))
 

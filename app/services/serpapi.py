@@ -18,7 +18,7 @@ def reverse_image_search(img_url, num):
     google_lens_results = search.get_json()
 
     # Extract links for specified number of products
-    product_links = [item['link'] for item in google_lens_results['visual_matches'][:num]]
+    product_links = [item['shopping_results'][0]['link'] for item in google_lens_results['knowledge_graph'][:num]]
 
     # Join the links into a string
     links_string = ', '.join(product_links)
