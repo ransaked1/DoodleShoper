@@ -131,21 +131,19 @@ const handleKeyPress = (event) => {
       fetchThreads();
 
       // Extract the new thread ID from the response
-    const newThreadId = newThreadResponse.data.id;
+      const newThreadId = newThreadResponse.data.id;
 
-    // Send a default message from the assistant to the new thread
-    await axios.post(`http://localhost:8080/api/v1/threads/mixed/${newThreadId}/messages/assistant`, {
-      content: introMessage
-    }, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      }
-    });
+      // Send a default message from the assistant to the new thread
+      await axios.post(`http://localhost:8080/api/v1/threads/mixed/${newThreadId}/messages/assistant`, {
+        content: introMessage
+      }, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
     
-    // After sending the default message, fetch the messages for the new thread
-    fetchMessages(newThreadId);
-
-    setSelectedThread(newThreadId);
+      fetchMessages(newThreadId);
+      setSelectedThread(newThreadId);
     } catch (error) {
       console.error('Failed to create new thread', error);
     }
@@ -167,8 +165,6 @@ const handleKeyPress = (event) => {
           Authorization: `Bearer ${accessToken}`
         }
       });
-      // Save the message ID from the response if needed
-      console.log('Message sent:', response.data);
       // Clear the input field after sending the message
       setNewMessage('');
       fetchMessages(selectedThread)
@@ -333,13 +329,12 @@ const handleKeyPress = (event) => {
     const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
     // Replace matched text with anchor tags
     const transformedContent = messageContent.replace(regex, (match, title, link) => {
-      const sanitizedLink = link.replace(/-/g, '–'); // Replace "-" with a similar-looking symbol
-      const linkText = `<a href="${sanitizedLink}" target="_blank">${title}</a>`;
-      return linkText.replace(/-/g, '–') ;
+      const linkText = `<a href="${link}" target="_blank">${title}</a>`;
+      return linkText;
     });
 
     // Replace "-" outside links with line breaks
-    const finalContent = transformedContent.replace(/-(?![^\[]*\])/g, '<br/>');
+    const finalContent = transformedContent.replace(/-(?![^<]*<\/a>)/g, '<br/>');
 
     // Add a line break after the last link
     const lastIndex = finalContent.lastIndexOf('</a>');

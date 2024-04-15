@@ -256,13 +256,12 @@ const handleKeyPress = (event) => {
     const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
     // Replace matched text with anchor tags
     const transformedContent = messageContent.replace(regex, (match, title, link) => {
-      const sanitizedLink = link.replace(/-/g, '–'); // Replace "-" with a similar-looking symbol
-      const linkText = `<a href="${sanitizedLink}" target="_blank">${title}</a>`;
-      return linkText.replace(/-/g, '–') ;
+      const linkText = `<a href="${link}" target="_blank">${title}</a>`;
+      return linkText;
     });
 
     // Replace "-" outside links with line breaks
-    const finalContent = transformedContent.replace(/-(?![^\[]*\])/g, '<br/>');
+    const finalContent = transformedContent.replace(/-(?![^<]*<\/a>)/g, '<br/>');
 
     // Add a line break after the last link
     const lastIndex = finalContent.lastIndexOf('</a>');
@@ -271,7 +270,7 @@ const handleKeyPress = (event) => {
     }
 
     return finalContent;
-};
+  };
 
   return (
     <div className="container">

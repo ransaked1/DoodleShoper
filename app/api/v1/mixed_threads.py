@@ -161,8 +161,6 @@ async def mixed_thread_submit_tool(
 
     image_object = req_data.image
 
-    print(image_object)
-
     if image_object.get("data") is None:
 
         client.beta.threads.runs.submit_tool_outputs(

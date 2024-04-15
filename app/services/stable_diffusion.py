@@ -9,7 +9,7 @@ url = Config.app_settings.get('sd_address')
 def build_payload(prompt, base64_img):
     # A1111 payload
     payload = {
-        "prompt": prompt + ", high resolution, photorealistic, high detail. white background",
+        "prompt": prompt + ", high resolution, photorealistic, high detail, white background, no background",
         "negative_prompt": "low resolution, cropped",
         "sampler_name": "DPM++ 2M Karras",
         "batch_size": 1,

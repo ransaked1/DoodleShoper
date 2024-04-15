@@ -17,10 +17,14 @@ def reverse_image_search(img_url, num):
     search = GoogleSearch(build_payload_img(img_url, num))
     google_lens_results = search.get_json()
 
-    # Extract links for specified number of products
-    product_links = [item['shopping_results'][0]['link'] for item in google_lens_results['knowledge_graph'][:num]]
+    # Filter out items without the "price" field and extract links with titles and thumbnails
+    products_with_price = [(item['title'][:6] + '...' if len(item['title'].split()) > 6 else item['title'], 
+                            item['link'], item['thumbnail']) 
+                           for item in google_lens_results['visual_matches'][:num] if 'price' in item]
 
-    # Join the links into a string
-    links_string = ', '.join(product_links)
+    # Format the title and link pair as "title: link" and join them into a string
+    links_string = ', '.join([f"{title}: {link}" for title, link, _ in products_with_price])
 
-    return links_string
+    thumbnails_string = ', '.join([thumbnail for _, _, thumbnail in products_with_price])
+
+    return "{'results': '{}', 'thumbnails': '{}'}, ".format(links_string, thumbnails_string)
