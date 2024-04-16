@@ -217,6 +217,7 @@ const handleKeyPress = (event) => {
             fetchMessages(threadId);
           } else if (status === 'requires_action' && action && action.submit_tool_outputs && action.submit_tool_outputs.tool_calls) {
             const toolCall = action.submit_tool_outputs.tool_calls[0];
+            console.log(action.submit_tool_outputs.tool_calls);
             if (toolCall && toolCall.function && toolCall.function.arguments && !imageProcessing) {
               const { prompt } = JSON.parse(toolCall.function.arguments);
               // Submit tool outputs
@@ -262,9 +263,8 @@ const handleKeyPress = (event) => {
   
 
   const submitToolOutputs = async (runId, toolCallId, prompt, includeImage) => {
+    const accessToken = Cookies.get('accessToken');
     try {
-      const accessToken = Cookies.get('accessToken');
-
       const canvasDataUrl = canvasRef.current.toDataURL(); // Get image data URL from canvas
 
       let base64Image = null;
@@ -293,6 +293,16 @@ const handleKeyPress = (event) => {
       setImageProcessing(false);
     } catch (error) {
       console.error('Failed to submit tool outputs', error);
+      // Send a an assistant message for the failure
+      await axios.post(`http://localhost:8080/api/v1/threads/mixed/${selectedThread}/messages/assistant`, {
+        content: "Sorry, something went terribly wrong on my end. Would you like to try again?"
+      }, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+      // Update messages after completion
+      fetchMessages(selectedThread);
       setImageProcessing(false);
     }
   };
@@ -348,20 +358,25 @@ const handleKeyPress = (event) => {
 
   const transformMessageContent = (messageContent) => {
     // Regular expression to match text within square brackets followed by a link within round brackets
-    const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const regex = /\[([^\]]+)\]\(([^)]+)\)|@([^\s]+)/g;
     // Replace matched text with anchor tags
-    const transformedContent = messageContent.replace(regex, (match, title, link) => {
-      const linkText = `<a href="${link}" target="_blank">${title}</a>`;
-      return linkText;
+    const transformedContent = messageContent.replace(regex, (match, title, link, thumbnail) => {
+        if (thumbnail) {
+            const thumbnailLink = `<img src="${thumbnail}" alt="Thumbnail"></img>`;
+            return thumbnailLink;
+        } else {
+            const linkText = `<a href="${link}" target="_blank">${title}</a><br/>`;
+            return linkText;
+        }
     });
 
     // Replace "-" outside links with line breaks
-    const finalContent = transformedContent.replace(/-(?![^<]*<\/a>)/g, '<br/>');
+    const finalContent = transformedContent.replace(/-(?![^<]*<\/(?:a|img)>)/g, '<br/>');
 
     // Add a line break after the last link
-    const lastIndex = finalContent.lastIndexOf('</a>');
+    const lastIndex = finalContent.lastIndexOf('</img>');
     if (lastIndex !== -1) {
-        return finalContent.substring(0, lastIndex + 4) + '<br/>' + finalContent.substring(lastIndex + 4);
+        return finalContent.substring(0, lastIndex) + '<br/>' + finalContent.substring(lastIndex);
     }
 
     return finalContent;

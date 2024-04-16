@@ -18,7 +18,7 @@ def reverse_image_search(img_url, num):
     google_lens_results = search.get_json()
 
     # Filter out items without the "price" field and extract links with titles and thumbnails
-    products_with_price = [(item['title'][:6] + '...' if len(item['title'].split()) > 6 else item['title'], 
+    products_with_price = [(item['title'][:20] + '...' if len(item['title'].split()) > 20 else item['title'], 
                             item['link'], item['thumbnail']) 
                            for item in google_lens_results['visual_matches'][:num] if 'price' in item]
 
@@ -27,4 +27,4 @@ def reverse_image_search(img_url, num):
 
     thumbnails_string = ', '.join([thumbnail for _, _, thumbnail in products_with_price])
 
-    return "{'results': '{}', 'thumbnails': '{}'}, ".format(links_string, thumbnails_string)
+    return "results: {}, thumbnails: {}".format(links_string, thumbnails_string)
