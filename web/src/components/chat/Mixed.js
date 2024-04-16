@@ -14,7 +14,7 @@ const Mixed = () => {
 
   const [drawing, setDrawing] = useState(false);
   const [prompt, setPrompt] = useState('');
-  const [toolCallIds, setToolCallIds] = useState('');
+  const [toolCallId, setToolCallId] = useState('');
   const [runId, setRunId] = useState('');
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayShownOnce, setOverlayShownOnce] = useState(false);
@@ -219,17 +219,40 @@ const handleKeyPress = (event) => {
             const toolCall = action.submit_tool_outputs.tool_calls[0];
             if (toolCall && toolCall.function && toolCall.function.arguments && !imageProcessing) {
               const { prompt } = JSON.parse(toolCall.function.arguments);
-              const toolCallIds = action.submit_tool_outputs.tool_calls.map(toolCall => toolCall.id);
               // Submit tool outputs
               setPrompt(prompt);
-              setToolCallIds(toolCallIds);
+              setToolCallId(toolCall.id);
               setRunId(runId);
               showOverlay();
             }
+          } else if (status === 'expired') {
+            clearInterval(intervalId); // Stop the interval when run is completed
+            setLoading(false); // Set loading to false after run completion
+            setOverlayShownOnce(false);
+            // Send a an assistant message for the failure
+            await axios.post(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages/assistant`, {
+              content: "Sorry, I haven't received the needed information. Would you like to try again?"
+            }, {
+              headers: {
+                Authorization: `Bearer ${accessToken}`
+              }
+            });
+            // Update messages after completion
+            fetchMessages(threadId);
           }
         } catch (error) {
           console.error('Failed to check run status', error);
           clearInterval(intervalId);
+          // Send a an assistant message for the failure
+          await axios.post(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages/assistant`, {
+            content: "Sorry, something went terribly wrong on my end. Would you like to try again?"
+          }, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          });
+          // Update messages after completion
+          fetchMessages(threadId);
         }
       }, 1000); // Check every 1 second
     } catch (error) {
@@ -238,7 +261,7 @@ const handleKeyPress = (event) => {
   };
   
 
-  const submitToolOutputs = async (runId, toolCallIds, prompt, includeImage) => {
+  const submitToolOutputs = async (runId, toolCallId, prompt, includeImage) => {
     try {
       const accessToken = Cookies.get('accessToken');
 
@@ -251,27 +274,26 @@ const handleKeyPress = (event) => {
       
       setImageProcessing(true);
       hideOverlay();
-      await Promise.all(toolCallIds.map(async (toolCallId) => {
-        await axios.post(
-          `http://localhost:8080/api/v1/threads/mixed/${selectedThread}/runs/${runId}/submit_tool_outputs`,
-          {
-            tool_call_id: toolCallId,
-            prompt,
-            image: {
-              "mime": "image/png",
-              "data": base64Image
-            }
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
+      await axios.post(
+        `http://localhost:8080/api/v1/threads/mixed/${selectedThread}/runs/${runId}/submit_tool_outputs`,
+        {
+          tool_call_id: toolCallId,
+          prompt,
+          image: {
+            "mime": "image/png",
+            "data": base64Image
           }
-        );
-      }));
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
       setImageProcessing(false);
     } catch (error) {
       console.error('Failed to submit tool outputs', error);
+      setImageProcessing(false);
     }
   };
 
@@ -355,7 +377,7 @@ const handleKeyPress = (event) => {
       {overlayVisible && (
         <div className="overlay">
           <div className="overlay-content">
-            <h3>Draw your image</h3>
+            <h3>Would you like to include an image in your search?</h3>
             {/* Drawing canvas */}
             <canvas
               ref={canvasRef}
@@ -369,8 +391,8 @@ const handleKeyPress = (event) => {
             {/* Tool buttons */}
             <div className="tools">
               <button onClick={clearCanvas}>Clear</button>
-              <button onClick={() => submitToolOutputs(runId, toolCallIds, prompt, true)}>{'Submit'}</button>
-              <button onClick={() => submitToolOutputs(runId, toolCallIds, prompt, false)}>{'No Image'}</button>
+              <button onClick={() => submitToolOutputs(runId, toolCallId, prompt, true)}>{'Submit'}</button>
+              <button onClick={() => submitToolOutputs(runId, toolCallId, prompt, false)}>{'No Image'}</button>
             </div>
           </div>
         </div>

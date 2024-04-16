@@ -9,7 +9,6 @@ services:
     networks:
       - backnet
       - frontnet
-      - default
     ports:
       - "8080:8080"
     environment:
