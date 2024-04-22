@@ -179,6 +179,6 @@ async def mixed_thread_submit_tool(
             run_id=run_id,
             tool_outputs=[{
                 "tool_call_id": req_data.tool_call_id,
-                "output": fetch_search_results_img(generated_image, num=5, websites=None)
+                "output": fetch_search_results_img(generated_image, num=20, websites=None)
             }]
         )

@@ -1,0 +1,38 @@
+.options-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap; /* Allow option cards to wrap if needed */
+  margin-top: 230px;
+}
+
+.option-card {
+  width: 200px;
+  height: 150px;
+  background-color: #f0f0f0;
+  margin: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  text-align: center;
+  font-family: Arial, sans-serif; /* Use a common sans-serif font */
+  color: #333; /* Set text color */
+  text-decoration: none; /* Remove underlining */
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+  transition: background-color 0.3s ease, transform 0.3s ease; /* Add transition effects */
+}
+
+.option-card:hover {
+  background-color: #e0e0e0; /* Change background color on hover */
+  transform: translateY(-3px); /* Add a slight lift effect */
+}
+
+.option-card.disabled {
+  background-color: #ccc; /* Change color for disabled option */
+  cursor: not-allowed;
+}
+
+.option-card.disabled:hover {
+  background-color: #ccc; /* Keep the color same on hover for disabled option */
+}

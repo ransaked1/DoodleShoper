@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import '../styles/signup.css';
 
 const Signup = () => {
   const [username, setUsername] = useState('');
@@ -51,9 +52,9 @@ const Signup = () => {
   };
 
   return (
-    <div>
-      <h2>Signup</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+    <div className="signup-container">
+      <h2>Sign up</h2>
+      {error && <p className="error">{error}</p>}
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -73,7 +74,7 @@ const Signup = () => {
           value={confirmPassword}
           onChange={handleConfirmPasswordChange}
         />
-        <button type="submit">Signup</button>
+        <button type="submit">Sign up</button>
       </form>
       <p>Already have an account? <Link to="/auth">Login</Link></p>
     </div>

@@ -9,8 +9,8 @@ url = Config.app_settings.get('sd_address')
 def build_payload(prompt, base64_img):
     # A1111 payload
     payload = {
-        "prompt": prompt + ", high resolution, photorealistic, high detail, white background, no background",
-        "negative_prompt": "low resolution, cropped",
+        "prompt": prompt + ", high resolution, photorealistic, high detail, 8k uhd, dslr",
+        "negative_prompt": "low resolution, cropped, person, text, out of frame, worst quality, low quality",
         "sampler_name": "DPM++ 2M Karras",
         "batch_size": 1,
         "steps": 20,
@@ -22,7 +22,7 @@ def build_payload(prompt, base64_img):
                         "input_image": base64_img,
                         "model": "control_v11p_sd15_scribble [d4ba51ff]",
                         "module": "invert (from white bg & black line)",
-                        "weight": 1.5,
+                        "weight": 1.3,
                         "resize_mode": "Just Resize"
                     }
                 ]

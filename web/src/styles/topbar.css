@@ -1,0 +1,49 @@
+.top-bar {
+    width: 100%;
+    display: flex;
+    justify-content: space-between; /* Align items to left and right */
+    align-items: center;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background-color: #007bff; /* Set background color */
+    color: white; /* Set text color */
+    overflow-x: hidden;
+  }
+  
+  .top-bar h2 {
+    text-align: center;
+    margin: 0; /* Remove default margin */
+    margin-left: 40px;
+  }
+  
+  .logout-button {
+    font-weight: 900;
+    padding: 10px 20px; /* Increase button padding */
+    border: none;
+    background-color: #fff; /* Set button background color */
+    color: #007bff; /* Set button text color */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 40px;
+  }
+  
+  .logout-button:hover {
+    background-color: #dcdcdc; /* Change background color on hover */
+  }
+
+  .back-button {
+    font-weight: 900;
+    padding: 10px 20px; /* Increase button padding */
+    border: none;
+    background-color: #fff; /* Set button background color */
+    color: #007bff; /* Set button text color */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-left: 40px;
+  }
+  
+  .back-button:hover {
+    background-color: #dcdcdc; /* Change background color on hover */
+  }

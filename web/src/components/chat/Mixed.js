@@ -2,9 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useNavigate, useParams } from 'react-router-dom';
+import '../../styles/topbar.css';
+import '../../styles/overlay.css';
+import '../../styles/main.css';
 
 const Mixed = () => {
   const { thread_id } = useParams();
+  const [username, setUsername] = useState('');
   const navigate = useNavigate();
   const [threads, setThreads] = useState([]);
   const [selectedThread, setSelectedThread] = useState(0);
@@ -20,10 +24,66 @@ const Mixed = () => {
   const [overlayShownOnce, setOverlayShownOnce] = useState(false);
   const [imageProcessing, setImageProcessing] = useState(false);
 
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get the textarea element
+    const textarea = document.querySelector('.message-input textarea');
+  
+    // Add event listener for input changes
+    textarea.addEventListener('input', function() {
+      // Reset the height to auto to allow the textarea to resize based on content
+      this.style.height = 'auto';
+      // Set the height to the scroll height, which will expand the textarea vertically if needed
+      this.style.height = (this.scrollHeight - 2) + 'px'; // Add a little extra to ensure full display of text
+    });
+  });
+
+  // Function to scroll to the bottom of the messages container
+  const scrollToBottom = () => {
+    const messagesContainer = document.querySelector('.messages-container');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+};
+
+useEffect(() => {
+    scrollToBottom();
+}, [messages]);
+
+useEffect(() => {
+    const handleResize = () => {
+        // Delay scrolling to the bottom to wait for the container to resize
+        setTimeout(() => {
+            scrollToBottom();
+        }, 100);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+        window.removeEventListener('resize', handleResize);
+    };
+}, []);
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      try {
+        const accessToken = Cookies.get('accessToken');
+        const response = await axios.get('http://localhost:8080/api/v1/users/me', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+        setUsername(response.data.username);
+      } catch (error) {
+        console.error('Failed to fetch username', error);
+      }
+    };
+
+    fetchUsername();
+  }, []);
+
   // Reference to the canvas element
   const canvasRef = useRef(null);
 
-  const introMessage = "Hello! I'm DoodleShoper, your AI powered assistant. I'm here to help you in finding the perfect product. What are you searching for today?"
+  const introMessage = "Hello! I'm DoodleShoper, your AI powered assistant. I'm here to help you find the perfect product. What are you searching for today?"
 
   // Function to handle drawing
   const handleDrawingStart = (event) => {
@@ -150,7 +210,7 @@ const handleKeyPress = (event) => {
   };
 
   const handleMessageSend = async () => {
-    if (!newMessage.trim()) {
+    if (!newMessage.trim() || !selectedThread) {
       // If the message is empty or contains only whitespace characters, do nothing
       return;
     }
@@ -362,32 +422,26 @@ const handleKeyPress = (event) => {
     // Replace matched text with anchor tags
     const transformedContent = messageContent.replace(regex, (match, title, link, thumbnail) => {
         if (thumbnail) {
-            const thumbnailLink = `<img src="${thumbnail}" alt="Thumbnail"></img>`;
+            const thumbnailLink = `<br/><img src="${thumbnail}" alt="Thumbnail" style="max-width: 100px; max-height: 100px;"></img><br/>`;
             return thumbnailLink;
         } else {
-            const linkText = `<a href="${link}" target="_blank">${title}</a><br/>`;
+            const linkText = `<a href="${link}" target="_blank">${title}</a>`;
             return linkText;
         }
     });
 
     // Replace "-" outside links with line breaks
-    const finalContent = transformedContent.replace(/-(?![^<]*<\/(?:a|img)>)/g, '<br/>');
-
-    // Add a line break after the last link
-    const lastIndex = finalContent.lastIndexOf('</img>');
-    if (lastIndex !== -1) {
-        return finalContent.substring(0, lastIndex) + '<br/>' + finalContent.substring(lastIndex);
-    }
+    const finalContent = transformedContent.replace(/(?<!<\/?[^>]*)(?<!\w)-(?!\w)(?![^<]*?>)/g, '<br/>');
 
     return finalContent;
 };
 
   return (
-    <div className="container">
+    <div className="chat-page-container">
       <div className="top-bar">
-        <button onClick={() => navigate('/chat')}>Back to Chat</button>
-        <h2>User is logged in</h2>
-        <button onClick={handleLogout}>Logout</button>
+        <button onClick={() => navigate('/chat')} className="back-button">Go back</button>
+        <h2>You are logged in as {username ? username : '?'}</h2>
+        <button onClick={handleLogout} className="logout-button">Logout</button>
       </div>
       {overlayVisible && (
         <div className="overlay">
@@ -413,9 +467,9 @@ const handleKeyPress = (event) => {
         </div>
       )}
       <div className="content">
-        <div className="side-panel">
-          <button onClick={handleNewThread}>Create New Thread</button>
-          <ul>
+      <div className="side-panel">
+        <button onClick={handleNewThread} className="new-conversation-button">New Conversation</button>
+          <ul className="thread-list">
             {threads.map((threadId, index) => (
               <li key={index} className={selectedThread === threadId ? 'selected' : ''} onClick={() => handleThreadClick(threadId)}>
                 Thread {index + 1}
@@ -425,6 +479,7 @@ const handleKeyPress = (event) => {
           </ul>
         </div>
         <div className="chat-container">
+        <div className="chat-content">
           <div className="messages-container-wrapper">
             <div className="messages-container">
               {messages.slice().reverse().map((message, index) => (
@@ -436,6 +491,7 @@ const handleKeyPress = (event) => {
           </div>
           <div className="message-input">
             <textarea
+              rows='1'
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyPress}
@@ -447,6 +503,7 @@ const handleKeyPress = (event) => {
               <button onClick={handleMessageSend}>Send</button>
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>

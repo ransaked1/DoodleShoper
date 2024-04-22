@@ -42,7 +42,7 @@ def fetch_search_results_text(query, start=1, num=5, websites=None):
     logging.info(f'Results: {search_results_string}')
     return search_results_string
 
-def fetch_search_results_img(img_base64, num=5, websites=None):
+def fetch_search_results_img(img_base64, num=20, websites=None):
     logging.info(f'Making google image search')
 
     img_uuid = uuid.uuid4().hex

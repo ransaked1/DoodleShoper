@@ -1,10 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useNavigate, Link } from 'react-router-dom';
+import '../../styles/chat.css';
+import '../../styles/topbar.css';
 
 const Chat = () => {
+  const [username, setUsername] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUsername = async () => {
+      try {
+        const accessToken = Cookies.get('accessToken');
+        const response = await axios.get('http://localhost:8080/api/v1/users/me', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+        setUsername(response.data.username);
+      } catch (error) {
+        console.error('Failed to fetch username', error);
+      }
+    };
+
+    fetchUsername();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -23,10 +44,10 @@ const Chat = () => {
   };
 
   return (
-    <div>
+    <div className="chat-page-container">
       <div className="top-bar">
-        <h2>User is logged in</h2>
-        <button onClick={handleLogout}>Logout</button>
+        <h2>Welcome {username ? username : ''} to DoodleShoper</h2>
+        <button className="logout-button" onClick={handleLogout}>Logout</button>
       </div>
       <div className="options-container">
         <Link to="/chat/text" className="option-card">
@@ -35,9 +56,9 @@ const Chat = () => {
         <Link to="/chat/mixed" className="option-card">
           Sketch-Based
         </Link>
-        <Link to="" className="option-card">
+        <div className="option-card disabled">
           Sketch-Based <br/>with SignWriting <br/> (Not yet available)
-        </Link>
+        </div>
       </div>
     </div>
   );
