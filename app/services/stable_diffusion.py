@@ -22,8 +22,8 @@ def build_payload(prompt, base64_img):
                         "input_image": base64_img,
                         "model": "control_v11p_sd15_scribble [d4ba51ff]",
                         "module": "invert (from white bg & black line)",
-                        "weight": 1,
-                        "resize_mode": "Crop and Resize",
+                        "weight": 1.3,
+                        "resize_mode": "Just Resize",
                         "control_mode": "My prompt is more important",
                         "guidance_start": 0,
                         "guidance_end": 0.5

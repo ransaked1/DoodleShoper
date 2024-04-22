@@ -161,6 +161,9 @@ const handleKeyPress = (event) => {
       setThreads(response.data.threads);
     } catch (error) {
       console.error('Failed to fetch threads', error);
+      if (error.response && error.response.status === 401) {
+        handleLogout(); // Call handleLogout method if response status is 401
+      }
     }
   };
 
@@ -175,6 +178,9 @@ const handleKeyPress = (event) => {
       setMessages(response.data.messages);
     } catch (error) {
       console.error('Failed to fetch messages', error);
+      if (error.response && error.response.status === 401) {
+        handleLogout(); // Call handleLogout method if response status is 401
+      }
     }
   };
 
@@ -206,6 +212,9 @@ const handleKeyPress = (event) => {
       setSelectedThread(newThreadId);
     } catch (error) {
       console.error('Failed to create new thread', error);
+      if (error.response && error.response.status === 401) {
+        handleLogout(); // Call handleLogout method if response status is 401
+      }
     }
   };
 
@@ -232,6 +241,9 @@ const handleKeyPress = (event) => {
       await createAndProcessRun(selectedThread);
     } catch (error) {
       console.error('Failed to send message', error);
+      if (error.response && error.response.status === 401) {
+        handleLogout(); // Call handleLogout method if response status is 401
+      }
     } 
   };
 
@@ -379,6 +391,9 @@ const handleKeyPress = (event) => {
         setMessages(response.data.messages);
       } catch (error) {
         console.error('Failed to fetch messages', error);
+        if (error.response && error.response.status === 401) {
+          handleLogout(); // Call handleLogout method if response status is 401
+        }
     }
   };
 
@@ -397,6 +412,9 @@ const handleKeyPress = (event) => {
       }
     } catch (error) {
       console.error('Failed to delete thread', error);
+      if (error.response && error.response.status === 401) {
+        handleLogout(); // Call handleLogout method if response status is 401
+      }
     }
   };
 
