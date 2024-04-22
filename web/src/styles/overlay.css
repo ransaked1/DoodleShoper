@@ -17,3 +17,48 @@
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Drop shadow effect */
   }
+
+  .tools {
+    display: flex;
+    justify-content: space-between;
+}
+
+.button-group {
+    display: flex;
+}
+
+.clear-button,
+.submit-button,
+.no-image-button,
+.cancel-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.clear-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.submit-button {
+    background-color: #28a745;
+    color: white;
+}
+
+.no-image-button {
+    background-color: #dc3545;
+    color: white;
+}
+
+.cancel-button {
+    background-color: #6c757d;
+    color: white;
+}
+
+.clear-button,
+.submit-button,
+.no-image-button {
+    margin-right: 10px;
+}

@@ -440,7 +440,7 @@ const handleKeyPress = (event) => {
     <div className="chat-page-container">
       <div className="top-bar">
         <button onClick={() => navigate('/chat')} className="back-button">Go back</button>
-        <h2>You are logged in as {username ? username : '?'}</h2>
+        <h2 id="no-margin">You are logged in as {username ? username : '?'}</h2>
         <button onClick={handleLogout} className="logout-button">Logout</button>
       </div>
       {overlayVisible && (
@@ -459,9 +459,14 @@ const handleKeyPress = (event) => {
 
             {/* Tool buttons */}
             <div className="tools">
-              <button onClick={clearCanvas}>Clear</button>
-              <button onClick={() => submitToolOutputs(runId, toolCallId, prompt, true)}>{'Submit'}</button>
-              <button onClick={() => submitToolOutputs(runId, toolCallId, prompt, false)}>{'No Image'}</button>
+              <div className="button-group">
+                  <button className="clear-button" onClick={clearCanvas}>Clear</button>
+              </div>
+              <div className="button-group">
+                  <button className="submit-button" onClick={() => submitToolOutputs(runId, toolCallId, prompt, true)}>Submit</button>
+                  <button className="no-image-button" onClick={() => submitToolOutputs(runId, toolCallId, prompt, false)}>No Image</button>
+                  <button className="cancel-button" onClick={hideOverlay}>Cancel</button>
+              </div>
             </div>
           </div>
         </div>
