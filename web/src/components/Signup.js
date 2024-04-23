@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 import axios from 'axios';
 import '../styles/signup.css';
 
@@ -9,6 +10,13 @@ const Signup = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const isLoggedIn = !!Cookies.get('accessToken');
+    if (isLoggedIn) {
+      navigate('/chat');
+    }
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

@@ -48,21 +48,6 @@ useEffect(() => {
 }, [messages]);
 
 useEffect(() => {
-    const handleResize = () => {
-        // Delay scrolling to the bottom to wait for the container to resize
-        setTimeout(() => {
-            scrollToBottom();
-        }, 100);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-        window.removeEventListener('resize', handleResize);
-    };
-}, []);
-
-  useEffect(() => {
     const fetchUsername = async () => {
       try {
         const accessToken = Cookies.get('accessToken');
@@ -268,8 +253,8 @@ const handleKeyPress = (event) => {
   };
 
   const checkRunStatus = async (runId, threadId) => {
+    const accessToken = Cookies.get('accessToken');
     try {
-      const accessToken = Cookies.get('accessToken');
       let intervalId = setInterval(async () => {
         try {
           const response = await axios.get(
@@ -289,8 +274,8 @@ const handleKeyPress = (event) => {
             fetchMessages(threadId);
           } else if (status === 'requires_action' && action && action.submit_tool_outputs && action.submit_tool_outputs.tool_calls) {
             const toolCall = action.submit_tool_outputs.tool_calls[0];
-            console.log(action.submit_tool_outputs.tool_calls);
-            if (toolCall && toolCall.function && toolCall.function.arguments && !imageProcessing) {
+            // console.log(action.submit_tool_outputs.tool_calls);
+            if (toolCall && toolCall.function && toolCall.function.arguments && !imageProcessing && !overlayShownOnce) {
               const { prompt } = JSON.parse(toolCall.function.arguments);
               // Submit tool outputs
               setPrompt(prompt);
@@ -304,7 +289,7 @@ const handleKeyPress = (event) => {
             setOverlayShownOnce(false);
             // Send a an assistant message for the failure
             await axios.post(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages/assistant`, {
-              content: "Sorry, I haven't received the needed information. Would you like to try again?"
+              content: "Sorry, I haven't received the needed information for the search. Would you like to try again?"
             }, {
               headers: {
                 Authorization: `Bearer ${accessToken}`
@@ -330,6 +315,15 @@ const handleKeyPress = (event) => {
       }, 1000); // Check every 1 second
     } catch (error) {
       console.error('Failed to start checking run status', error);
+      await axios.post(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages/assistant`, {
+            content: "Sorry, something went terribly wrong on my end. Would you like to try again?"
+          }, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          });
+          // Update messages after completion
+          fetchMessages(threadId);
     }
   };
   

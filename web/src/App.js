@@ -18,7 +18,7 @@ const App = () => {
         <Route path="/" element={isLoggedIn ? <Navigate to="/chat" /> : <Navigate to="/auth" />} />
         <Route path="/auth" element={<Login />} />
         <Route path="/auth/signup" element={<Signup />} />
-        <Route path="/chat" element={isLoggedIn ? <Chat /> : <Login />} />
+        <Route path="/chat" element={<Chat />} />
         <Route path="/chat/text" element={isLoggedIn ? <Text /> : <Login />} />
         <Route path="/chat/mixed" element={isLoggedIn ? <Mixed /> : <Login />} />
         <Route path="/chat/sketch" element={isLoggedIn ? <Sketch /> : <Login />} />
