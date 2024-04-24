@@ -30,14 +30,23 @@ def fetch_search_results_text(query, start=1, num=5, websites=None):
     # Perform the search
     response = requests.get('https://www.googleapis.com/customsearch/v1', params=build_payload_text(query, start, num, websites))
 
+    logging.info(response.json())
+
     if response.status_code != 200:
         raise InternalError([{"message": f"Google Search API failed: {response.text}"}])
 
     # Extract the URLs
     search_result_urls = [item['image']['contextLink'] for item in response.json().get('items', [])]
 
+    search_result_thumbnails = [item['image']['thumbnailLink'] for item in response.json().get('items', [])]
+
     # Convert the list of URLs to a string
-    search_results_string = ', '.join(search_result_urls)
+    search_results_string_url = ', '.join(search_result_urls)
+
+    # Convert the list of thumbnails to a string
+    search_results_string_thumbnails = ', '.join(search_result_thumbnails)
+
+    search_results_string = "results: {}, thumbnails: {}".format(search_results_string_url, search_results_string_thumbnails)
 
     logging.info(f'Results: {search_results_string}')
     return search_results_string

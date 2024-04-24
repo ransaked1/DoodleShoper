@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useNavigate, useParams } from 'react-router-dom';
+import '../../styles/topbar.css';
+import '../../styles/main.css';
 
 const Text = () => {
   const { thread_id } = useParams();
+  const [username, setUsername] = useState('');
   const navigate = useNavigate();
   const [threads, setThreads] = useState([]);
   const [selectedThread, setSelectedThread] = useState(0);
@@ -26,6 +29,33 @@ const Text = () => {
     }
   }, [thread_id, selectedThread]);
 
+  const scrollToBottom = () => {
+    const messagesContainer = document.querySelector('.messages-container');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+};
+
+useEffect(() => {
+    scrollToBottom();
+}, [messages]);
+
+useEffect(() => {
+    const fetchUsername = async () => {
+      try {
+        const accessToken = Cookies.get('accessToken');
+        const response = await axios.get('http://localhost:8080/api/v1/users/me', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        });
+        setUsername(response.data.username);
+      } catch (error) {
+        console.error('Failed to fetch username', error);
+      }
+    };
+
+    fetchUsername();
+  }, []);
+
 const handleKeyPress = (event) => {
   if (event.key === 'Enter' && !event.shiftKey) {
     // Prevent default behavior of Enter key (new line) and send the message
@@ -45,6 +75,9 @@ const handleKeyPress = (event) => {
       setThreads(response.data.threads);
     } catch (error) {
       console.error('Failed to fetch threads', error);
+      if (error.response && error.response.status === 401) {
+        handleLogout(); // Call handleLogout method if response status is 401
+      }
     }
   };
 
@@ -59,6 +92,9 @@ const handleKeyPress = (event) => {
       setMessages(response.data.messages);
     } catch (error) {
       console.error('Failed to fetch messages', error);
+      if (error.response && error.response.status === 401) {
+        handleLogout(); // Call handleLogout method if response status is 401
+      }
     }
   };
 
@@ -92,11 +128,14 @@ const handleKeyPress = (event) => {
     setSelectedThread(newThreadId);
     } catch (error) {
       console.error('Failed to create new thread', error);
+      if (error.response && error.response.status === 401) {
+        handleLogout(); // Call handleLogout method if response status is 401
+      }
     }
   };
 
   const handleMessageSend = async () => {
-    if (!newMessage.trim()) {
+    if (!newMessage.trim() || !selectedThread) {
       // If the message is empty or contains only whitespace characters, do nothing
       return;
     }
@@ -111,8 +150,6 @@ const handleKeyPress = (event) => {
           Authorization: `Bearer ${accessToken}`
         }
       });
-      // Save the message ID from the response if needed
-      console.log('Message sent:', response.data);
       // Clear the input field after sending the message
       setNewMessage('');
       fetchMessages(selectedThread)
@@ -120,6 +157,9 @@ const handleKeyPress = (event) => {
       await createAndProcessRun(selectedThread);
     } catch (error) {
       console.error('Failed to send message', error);
+      if (error.response && error.response.status === 401) {
+        handleLogout(); // Call handleLogout method if response status is 401
+      }
     } 
   };
 
@@ -144,8 +184,8 @@ const handleKeyPress = (event) => {
   };
 
   const checkRunStatus = async (runId, threadId) => {
+    const accessToken = Cookies.get('accessToken');
     try {
-      const accessToken = Cookies.get('accessToken');
       let intervalId = setInterval(async () => {
         try {
           const response = await axios.get(
@@ -170,6 +210,18 @@ const handleKeyPress = (event) => {
               // Submit tool outputs
               await submitToolOutputs(runId, toolCallId, prompt);
             }
+          } else if (status === 'expired') {
+            clearInterval(intervalId); // Stop the interval when run is completed
+            // Send a an assistant message for the failure
+            await axios.post(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages/assistant`, {
+              content: "Sorry, I haven't received the needed information for the search. Would you like to try again?"
+            }, {
+              headers: {
+                Authorization: `Bearer ${accessToken}`
+              }
+            });
+            // Update messages after completion
+            fetchMessages(threadId);
           }
         } catch (error) {
           console.error('Failed to check run status', error);
@@ -178,13 +230,22 @@ const handleKeyPress = (event) => {
       }, 1000); // Check every 1 second
     } catch (error) {
       console.error('Failed to start checking run status', error);
+      await axios.post(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages/assistant`, {
+            content: "Sorry, something went terribly wrong on my end. Would you like to try again?"
+          }, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          });
+          // Update messages after completion
+          fetchMessages(threadId);
     }
   };
   
 
   const submitToolOutputs = async (runId, toolCallId, prompt) => {
+    const accessToken = Cookies.get('accessToken');
     try {
-      const accessToken = Cookies.get('accessToken');
       await axios.post(
         `http://localhost:8080/api/v1/threads/text/${selectedThread}/runs/${runId}/submit_tool_outputs`,
         {
@@ -199,6 +260,15 @@ const handleKeyPress = (event) => {
       );
     } catch (error) {
       console.error('Failed to submit tool outputs', error);
+      await axios.post(`http://localhost:8080/api/v1/threads/mixed/${selectedThread}/messages/assistant`, {
+        content: "Sorry, something went terribly wrong on my end. Would you like to try again?"
+      }, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+      // Update messages after completion
+      fetchMessages(selectedThread);
     }
   };
 
@@ -214,6 +284,9 @@ const handleKeyPress = (event) => {
         setMessages(response.data.messages);
       } catch (error) {
         console.error('Failed to fetch messages', error);
+        if (error.response && error.response.status === 401) {
+          handleLogout(); // Call handleLogout method if response status is 401
+        }
     }
   };
 
@@ -232,6 +305,9 @@ const handleKeyPress = (event) => {
       }
     } catch (error) {
       console.error('Failed to delete thread', error);
+      if (error.response && error.response.status === 401) {
+        handleLogout(); // Call handleLogout method if response status is 401
+      }
     }
   };
 
@@ -253,36 +329,36 @@ const handleKeyPress = (event) => {
 
   const transformMessageContent = (messageContent) => {
     // Regular expression to match text within square brackets followed by a link within round brackets
-    const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const regex = /\[([^\]]+)\]\(([^)]+)\)|@([^\s]+)/g;
     // Replace matched text with anchor tags
-    const transformedContent = messageContent.replace(regex, (match, title, link) => {
-      const linkText = `<a href="${link}" target="_blank">${title}</a>`;
-      return linkText;
+    const transformedContent = messageContent.replace(regex, (match, title, link, thumbnail) => {
+        if (thumbnail) {
+            thumbnail = thumbnail.replace(/^\[|\]$/g, '');
+            const thumbnailLink = `<br/><img src="${thumbnail}" alt="Thumbnail" style="max-width: 100px; max-height: 100px;"></img><br/>`;
+            return thumbnailLink;
+        } else {
+            const linkText = `<a href="${link}" target="_blank">${title}</a>`;
+            return linkText;
+        }
     });
 
     // Replace "-" outside links with line breaks
-    const finalContent = transformedContent.replace(/-(?![^<]*<\/a>)/g, '<br/>');
-
-    // Add a line break after the last link
-    const lastIndex = finalContent.lastIndexOf('</a>');
-    if (lastIndex !== -1) {
-        return finalContent.substring(0, lastIndex + 4) + '<br/>' + finalContent.substring(lastIndex + 4);
-    }
+    const finalContent = transformedContent.replace(/(?<!<\/?[^>]*)(?<!\w)-(?!\w)(?![^<]*?>)/g, '<br/>');
 
     return finalContent;
-  };
+};
 
   return (
-    <div className="container">
+    <div className="chat-page-container">
       <div className="top-bar">
-        <button onClick={() => navigate('/chat')}>Back to Chat</button>
-        <h2>User is logged in</h2>
-        <button onClick={handleLogout}>Logout</button>
+        <button onClick={() => navigate('/chat')} className="back-button">Go back</button>
+        <h2 id="no-margin">You are logged in as {username ? username : '?'}</h2>
+        <button onClick={handleLogout} className="logout-button">Logout</button>
       </div>
       <div className="content">
         <div className="side-panel">
-          <button onClick={handleNewThread}>Create New Thread</button>
-          <ul>
+          <button onClick={handleNewThread} className="new-conversation-button">New Conversation</button>
+          <ul className="thread-list">
             {threads.map((threadId, index) => (
               <li key={index} className={selectedThread === threadId ? 'selected' : ''} onClick={() => handleThreadClick(threadId)}>
                 Thread {index + 1}
@@ -292,6 +368,7 @@ const handleKeyPress = (event) => {
           </ul>
         </div>
         <div className="chat-container">
+        <div className="chat-content">
           <div className="messages-container-wrapper">
             <div className="messages-container">
               {messages.slice().reverse().map((message, index) => (
@@ -303,6 +380,7 @@ const handleKeyPress = (event) => {
           </div>
           <div className="message-input">
             <textarea
+              rows='1'
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyPress}
@@ -314,6 +392,7 @@ const handleKeyPress = (event) => {
               <button onClick={handleMessageSend}>Send</button>
             )}
           </div>
+        </div>
         </div>
       </div>
     </div>

@@ -434,6 +434,7 @@ const handleKeyPress = (event) => {
     // Replace matched text with anchor tags
     const transformedContent = messageContent.replace(regex, (match, title, link, thumbnail) => {
         if (thumbnail) {
+            thumbnail = thumbnail.replace(/^\[|\]$/g, '');
             const thumbnailLink = `<br/><img src="${thumbnail}" alt="Thumbnail" style="max-width: 100px; max-height: 100px;"></img><br/>`;
             return thumbnailLink;
         } else {
