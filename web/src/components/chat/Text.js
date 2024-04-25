@@ -36,7 +36,7 @@ const Text = () => {
 
 useEffect(() => {
     scrollToBottom();
-}, [messages]);
+}, [loading]);
 
 useEffect(() => {
     const fetchUsername = async () => {

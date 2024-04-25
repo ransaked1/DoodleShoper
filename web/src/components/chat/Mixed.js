@@ -45,7 +45,7 @@ const Mixed = () => {
 
 useEffect(() => {
     scrollToBottom();
-}, [messages]);
+}, [loading]);
 
 useEffect(() => {
     const fetchUsername = async () => {
@@ -113,6 +113,7 @@ useEffect(() => {
   // Function to hide overlay popup
   const hideOverlay = () => {
     setOverlayVisible(false);
+    setOverlayShownOnce(false);
   };
 
   useEffect(() => {
