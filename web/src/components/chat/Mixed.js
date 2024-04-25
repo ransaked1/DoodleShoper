@@ -45,7 +45,7 @@ const Mixed = () => {
 
 useEffect(() => {
     scrollToBottom();
-}, [loading]);
+}, [messages]);
 
 useEffect(() => {
     const fetchUsername = async () => {
