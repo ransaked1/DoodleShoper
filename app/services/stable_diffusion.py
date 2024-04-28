@@ -11,7 +11,7 @@ def build_payload(prompt, base64_img):
     payload = {
         "prompt": prompt + ", high resolution, photorealistic, high detail, 8k uhd, dslr",
         "negative_prompt": "low resolution, cropped, person, text, out of frame, worst quality, low quality, centered, wide shot",
-        "sampler_name": "Euler a",
+        "sampler_name": STABLE_DIFFUSION_SAMPLER,
         "batch_size": 1,
         "steps": 20,
         "cfg_scale": 7,
@@ -20,11 +20,11 @@ def build_payload(prompt, base64_img):
                 "args": [
                     {
                         "input_image": base64_img,
-                        "model": "control_v11p_sd15_scribble [d4ba51ff]",
-                        "module": "invert (from white bg & black line)",
-                        "weight": 1.3,
-                        "resize_mode": "Just Resize",
-                        "control_mode": "My prompt is more important",
+                        "model": STABLE_DIFFUSION_MODEL,
+                        "module": STABLE_DIFFUSION_MODULE,
+                        "weight": STABLE_DIFFUSION_CONTROL_WEIGHT,
+                        "resize_mode": STABLE_DIFFUSION_RESIZE_MODE,
+                        "control_mode": STABLE_DIFFUSION_CONTROL_MODE,
                         "guidance_start": 0,
                         "guidance_end": 0.5
                     }
@@ -41,10 +41,10 @@ def generate_image_stable_diffusion(prompt, base64_img):
 
     payload = build_payload(prompt, base64_img)
 
-    logging.info(f"Sending to {url}/sdapi/v1/txt2img")
+    logging.info(f"Sending to {url}{STABLE_DIFFUSION_PATH}")
 
     # Trigger Generation
-    response = requests.post(url=f'{url}/sdapi/v1/txt2img', json=payload)
+    response = requests.post(url=f'{url}{STABLE_DIFFUSION_PATH}', json=payload)
 
     # Read results
     r = response.json()

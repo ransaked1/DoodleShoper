@@ -32,6 +32,10 @@ router = APIRouter()
 
 client = OpenAI(api_key=Config.app_settings.get('openai_key'))
 
+##############################################
+#  THESE THREADS HAVE NOT BEEN IMPLEMENTED!  #
+##############################################
+
 @router.post('/sketch', status_code=status.HTTP_200_OK)
 async def sketch_thread_new(
     current_user: Annotated[str, Depends(get_current_user)],
