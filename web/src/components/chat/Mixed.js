@@ -24,18 +24,15 @@ const Mixed = () => {
   const [overlayShownOnce, setOverlayShownOnce] = useState(false);
   const [imageProcessing, setImageProcessing] = useState(false);
 
-  document.addEventListener('DOMContentLoaded', function() {
-    // Get the textarea element
-    const textarea = document.querySelector('.message-input textarea');
-  
-    // Add event listener for input changes
-    textarea.addEventListener('input', function() {
-      // Reset the height to auto to allow the textarea to resize based on content
-      this.style.height = 'auto';
-      // Set the height to the scroll height, which will expand the textarea vertically if needed
-      this.style.height = (this.scrollHeight - 2) + 'px'; // Add a little extra to ensure full display of text
-    });
-  });
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = (textarea.scrollHeight - 2) + 'px';
+    }
+  }, [newMessage]);
 
   // Function to scroll to the bottom of the messages container
   const scrollToBottom = () => {
@@ -510,6 +507,7 @@ const handleKeyPress = (event) => {
           </div>
           <div className="message-input">
             <textarea
+              ref={textareaRef}
               rows='1'
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}

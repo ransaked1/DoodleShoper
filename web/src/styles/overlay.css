@@ -27,6 +27,10 @@
     display: flex;
 }
 
+canvas {
+    border: 1px solid grey; /* Add black border to the canvas */
+}
+
 .clear-button,
 .submit-button,
 .no-image-button,

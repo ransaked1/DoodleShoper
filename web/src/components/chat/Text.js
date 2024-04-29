@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -16,6 +16,16 @@ const Text = () => {
   const [loading, setLoading] = useState(false);
 
   const introMessage = "Hello! I'm DoodleShoper, your AI powered assistant. I'm here to help you in finding the perfect product. What are you searching for today?"
+
+  const textareaRef = useRef(null);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = (textarea.scrollHeight - 2) + 'px';
+    }
+  }, [newMessage]);
 
   useEffect(() => {
     fetchThreads();
@@ -380,6 +390,7 @@ const handleKeyPress = (event) => {
           </div>
           <div className="message-input">
             <textarea
+              ref={textareaRef}
               rows='1'
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
