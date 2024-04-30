@@ -21,8 +21,6 @@ COPY poetry.lock pyproject.toml main.py __init__.py ./
 RUN poetry config virtualenvs.create false
 RUN poetry install --no-dev
 
-# RUN pytest
-
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
 
 #gunicorn -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8888 -w 4 app.main:app
