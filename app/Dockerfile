@@ -15,7 +15,6 @@ ADD ./common ./common
 ADD ./models ./models
 ADD ./schemas ./schemas
 ADD ./services ./services
-ADD ./tests ./tests
 COPY poetry.lock pyproject.toml main.py __init__.py ./
 
 RUN poetry config virtualenvs.create false
