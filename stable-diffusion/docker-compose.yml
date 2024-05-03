@@ -31,18 +31,20 @@ services:
     build: ./services/AUTOMATIC1111
     image: sd-auto:72
     networks:
+      - default
       - backnet
     environment:
-      - CLI_ARGS=--allow-code --medvram --xformers --enable-insecure-extension-access --opt-split-attention --opt-sdp-attention --api
+      - CLI_ARGS=--listen --skip-torch-cuda-test --share --allow-code --xformers --enable-insecure-extension-access --api
 
   auto-cpu:
     <<: *automatic
     profiles: ["auto-cpu"]
     deploy: {}
     networks:
+      - default
       - backnet
     environment:
-      - CLI_ARGS=--no-half --precision full --allow-code --enable-insecure-extension-access --opt-split-attention --opt-sdp-attention --api
+      - CLI_ARGS=--listen --skip-torch-cude-test --share  --allow-code --xformers --enable-insecure-extension-access --api
 
   invoke: &invoke
     <<: *base_service
