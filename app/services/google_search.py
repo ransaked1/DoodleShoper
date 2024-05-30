@@ -46,22 +46,25 @@ def fetch_search_results_text(query, start=1, num=5, websites=None):
     # Convert the list of thumbnails to a string
     search_results_string_thumbnails = ', '.join(search_result_thumbnails)
 
-    search_results_string = "results: {}, thumbnails: {}".format(search_results_string_url, search_results_string_thumbnails)
+    search_results_string = "links: {}, thumbnails: {}".format(search_results_string_url, search_results_string_thumbnails)
 
     logging.info(f'Results: {search_results_string}')
     return search_results_string
 
-def fetch_search_results_img(img_base64, num=20, websites=None):
+def fetch_search_results_img(sketch_base64, img_base64, num=20, websites=None):
     logging.info(f'Making google image search')
 
+    sketch_uuid = uuid.uuid4().hex
     img_uuid = uuid.uuid4().hex
 
     init_cloudinary()
 
+    sketch_url = upload_image_web(sketch_base64, sketch_uuid)
     img_url = upload_image_web(img_base64, img_uuid)
 
-    search_results_string = reverse_image_search(img_url, num)
+    search_results_string = reverse_image_search(sketch_url, img_url, num)
 
+    # destroy_image_web(sketch_uuid)
     # destroy_image_web(img_uuid)
 
     logging.info(f'Results: {search_results_string}')

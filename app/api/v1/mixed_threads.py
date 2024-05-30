@@ -32,7 +32,7 @@ from openai import OpenAI
 
 router = APIRouter()
 
-client = OpenAI(api_key=Config.app_settings.get('openai_key'))
+client = OpenAI(api_key=Config.app_settings.get('openai_key'), default_headers={"OpenAI-Beta": "assistants=v2"})
 
 
 @router.post('/mixed', status_code=status.HTTP_200_OK)
@@ -81,8 +81,10 @@ async def mixed_messages_list(
 ):
     logging.info(f'Listing messages for thread {thread_id}')
 
-    thread_messages = client.beta.threads.messages.list(thread_id, limit=50)
-    
+    thread_messages = client.beta.threads.messages.list(thread_id)
+
+    return {'messages': thread_messages.data} # Replaced model with hardcoded response because new API version breaks the model code
+
     return ListMessageResourceResp(messages=thread_messages.data)
 
 
@@ -147,6 +149,8 @@ async def mixed_thread_check(
         run_id=run_id
     )
 
+    return {'status': run.status, 'action': run.required_action} # Replaced model with hardcoded response because new API version breaks the model code
+
     return RunThreadStatusResp(status=run.status, action=run.required_action)
 
 
@@ -159,9 +163,9 @@ async def mixed_thread_submit_tool(
 ):
     logging.info(f'Submit tool outputs for call {req_data.tool_call_id}')
 
-    image_object = req_data.image
+    image_data = req_data.image.get("data")
 
-    if image_object.get("data") is None:
+    if image_data is None:
 
         client.beta.threads.runs.submit_tool_outputs(
             thread_id=thread_id,
@@ -172,13 +176,13 @@ async def mixed_thread_submit_tool(
             }]
         )
     else:
-        generated_image = generate_image_stable_diffusion(req_data.prompt, image_object.get("data"))
+        generated_image = generate_image_stable_diffusion(req_data.prompt, image_data)
 
         client.beta.threads.runs.submit_tool_outputs(
             thread_id=thread_id,
             run_id=run_id,
             tool_outputs=[{
                 "tool_call_id": req_data.tool_call_id,
-                "output": fetch_search_results_img(generated_image, num=20, websites=None)
+                "output": fetch_search_results_img(image_data, generated_image, num=20, websites=None)
             }]
         )

@@ -65,7 +65,7 @@ useEffect(() => {
   // Reference to the canvas element
   const canvasRef = useRef(null);
 
-  const introMessage = "Hello! I'm DoodleShoper, your AI powered assistant. I'm here to help you find the perfect product. What are you searching for today?"
+  const introMessage ="{\"text\": \"Hello! I am DoodleShoper, your AI powered assistant. I am here to help you find the perfect product. What are you searching for today?\"}"
 
   // Function to handle drawing
   const handleDrawingStart = (event) => {
@@ -211,7 +211,7 @@ const handleKeyPress = (event) => {
     try {
       const accessToken = Cookies.get('accessToken');
       const response = await axios.post(`http://localhost:8080/api/v1/threads/mixed/${selectedThread}/messages`, {
-        content: newMessage
+        content: `{\"text\": \"${newMessage}\" }`
       }, {
         headers: {
           Authorization: `Bearer ${accessToken}`
@@ -266,10 +266,10 @@ const handleKeyPress = (event) => {
           const { status, action } = response.data;
           if (status === 'completed') {
             clearInterval(intervalId); // Stop the interval when run is completed
-            setLoading(false); // Set loading to false after run completion
             setOverlayShownOnce(false);
             // Update messages after completion
             fetchMessages(threadId);
+            setLoading(false); // Set loading to false after run completion
           } else if (status === 'requires_action' && action && action.submit_tool_outputs && action.submit_tool_outputs.tool_calls) {
             const toolCall = action.submit_tool_outputs.tool_calls[0];
             // console.log(action.submit_tool_outputs.tool_calls);
@@ -283,11 +283,10 @@ const handleKeyPress = (event) => {
             }
           } else if (status === 'expired') {
             clearInterval(intervalId); // Stop the interval when run is completed
-            setLoading(false); // Set loading to false after run completion
             setOverlayShownOnce(false);
             // Send a an assistant message for the failure
             await axios.post(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages/assistant`, {
-              content: "Sorry, I haven't received the needed information for the search. Would you like to try again?"
+              content: "{\"text\": \"Sorry, I haven't received the needed information for the search. Would you like to try again?\"}"
             }, {
               headers: {
                 Authorization: `Bearer ${accessToken}`
@@ -295,13 +294,14 @@ const handleKeyPress = (event) => {
             });
             // Update messages after completion
             fetchMessages(threadId);
+            setLoading(false); // Set loading to false after run completion
           }
         } catch (error) {
           console.error('Failed to check run status', error);
           clearInterval(intervalId);
           // Send a an assistant message for the failure
           await axios.post(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages/assistant`, {
-            content: "Sorry, something went terribly wrong on my end. Would you like to try again?"
+            content: "{\"text\": \"Sorry, something went terribly wrong on my end. Would you like to try again?\"}"
           }, {
             headers: {
               Authorization: `Bearer ${accessToken}`
@@ -314,7 +314,7 @@ const handleKeyPress = (event) => {
     } catch (error) {
       console.error('Failed to start checking run status', error);
       await axios.post(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages/assistant`, {
-            content: "Sorry, something went terribly wrong on my end. Would you like to try again?"
+            content: "{\"text\": \"Sorry, something went terribly wrong on my end. Would you like to try again?\"}"
           }, {
             headers: {
               Authorization: `Bearer ${accessToken}`
@@ -359,7 +359,7 @@ const handleKeyPress = (event) => {
       console.error('Failed to submit tool outputs', error);
       // Send a an assistant message for the failure
       await axios.post(`http://localhost:8080/api/v1/threads/mixed/${selectedThread}/messages/assistant`, {
-        content: "Sorry, something went terribly wrong on my end. Would you like to try again?"
+        content: "{\"text\": \"Sorry, something went terribly wrong on my end. Would you like to try again?\"}"
       }, {
         headers: {
           Authorization: `Bearer ${accessToken}`
@@ -426,9 +426,9 @@ const handleKeyPress = (event) => {
     }
   };
 
-  const transformMessageContent = (messageContent) => {
+  const transformMessageContentDeprecated = (messageContent) => {
     // Regular expression to match text within square brackets followed by a link within round brackets
-    const regex = /\[([^\]]+)\]\(([^)]+)\)|@([^\s]+)/g;
+    const regex = /\[([^\]]+)\]\(([^)]+)\)|[@!]([^\s]+)/g;
     // Replace matched text with anchor tags
     const transformedContent = messageContent.replace(regex, (match, title, link, thumbnail) => {
         if (thumbnail) {
@@ -446,6 +446,48 @@ const handleKeyPress = (event) => {
 
     return finalContent;
 };
+
+function transformMessageContent(messageContent) {
+  const { sketch, image, text, links, thumbnails } = JSON.parse(messageContent);
+
+  console.log(links)
+
+  // Use image URLs
+  const sketchImg = sketch ? `
+    <div class="image-container">
+      <p>Your sketch</p>
+      <img src="${sketch}" alt="sketch" class="thumbnail"/>
+    </div>` : '';
+
+  const imageImg = image ? `
+    <div class="image-container">
+      <p>My image</p>
+      <img src="${image}" alt="image" class="thumbnail"/>
+    </div>` : '';
+
+  // Generate links with thumbnails
+  const linkThumbnails = thumbnails && links ? 
+    links.map((link, index) => {
+      const thumbnail = thumbnails[index] ? `<img src="${thumbnails[index]}" alt="thumbnail" class="thumbnail-link"/>` : '';
+      return `<a href="${link.url}" target="_blank" rel="noopener noreferrer">${thumbnail}</a>`;
+    }).join(' ') : '';
+
+  // Combine all parts
+  const messageHTML = `
+    <div class="message-content">
+      <div class="images-wrapper">
+        ${sketchImg}
+        ${imageImg}
+      </div>
+      <p>${text}</p>
+      <div class="link-thumbnails">
+        ${linkThumbnails}
+      </div>
+    </div>
+  `;
+
+  return messageHTML;
+}
 
   return (
     <div className="chat-page-container">

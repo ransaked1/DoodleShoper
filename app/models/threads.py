@@ -9,7 +9,7 @@ class CreateThreadResourceResp(MongoModel):
 class ListThreadResourceResp(MongoModel):
     threads: list
 
-class ListMessageResourceResp(MongoModel):
+class ListMessageResourceResp(BaseModel):
     messages: list
 
 class SendMessageResourceReq(BaseModel):

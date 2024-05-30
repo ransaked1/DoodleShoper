@@ -13,7 +13,7 @@ def build_payload_img(img_url, num):
 
     return payload
 
-def reverse_image_search(img_url, num):
+def reverse_image_search(sketch_url, img_url, num):
     search = GoogleSearch(build_payload_img(img_url, num))
     google_lens_results = search.get_json()
 
@@ -27,4 +27,4 @@ def reverse_image_search(img_url, num):
 
     thumbnails_string = ', '.join([thumbnail for _, _, thumbnail in products_with_price])
 
-    return "results: {}, thumbnails: {}".format(links_string, thumbnails_string)
+    return "sketch: {}, image: {}, links: {}, thumbnails: {}".format(sketch_url, img_url, links_string, thumbnails_string)

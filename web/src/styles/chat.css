@@ -37,3 +37,31 @@
 .option-card.disabled:hover {
   background-color: #9c9c9c; /* Keep the color same on hover for disabled option */
 }
+
+.thumbnail {
+  width: 100px;
+  height: 100px;
+  margin-right: 10px;
+}
+
+.thumbnail-link {
+  width: 100px;
+  height: 100px;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.images-wrapper {
+  display: flex;
+  flex-wrap: wrap; /* Enable wrapping of the flex items */
+  gap: 10px; /* Adjust the gap size as needed */
+}
+
+.image-container {
+  text-align: center;
+}
+
+.image-container p {
+  margin: 0;
+  font-size: 14px;
+}
