@@ -39,16 +39,19 @@
 }
 
 .thumbnail {
-  width: 100px;
-  height: 100px;
-  margin-right: 10px;
+  max-width: 100px;
+  max-height: 100px;
+  width: auto;
+  height: auto;
 }
 
 .thumbnail-link {
-  width: 100px;
-  height: 100px;
+  max-width: 100px;
+  max-height: 100px;
+  width: auto;
+  height: auto;
   display: inline-block;
-  margin-right: 10px;
+  margin: 5px;
 }
 
 .images-wrapper {

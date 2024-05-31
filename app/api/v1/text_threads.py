@@ -30,7 +30,7 @@ from openai import OpenAI
 
 router = APIRouter()
 
-client = OpenAI(api_key=Config.app_settings.get('openai_key'))
+client = OpenAI(api_key=Config.app_settings.get('openai_key'), default_headers={"OpenAI-Beta": "assistants=v2"})
 
 @router.post('/text', status_code=status.HTTP_200_OK)
 async def text_thread_new(
@@ -78,6 +78,8 @@ async def text_messages_list(
 
     thread_messages = client.beta.threads.messages.list(thread_id, limit=50)
     
+    return {'messages': thread_messages.data} # Replaced model with hardcoded response because new API version breaks the model code
+
     return ListMessageResourceResp(messages=thread_messages.data)
 
 @router.post('/text/{thread_id}/messages', status_code=status.HTTP_200_OK)
@@ -139,6 +141,8 @@ async def text_thread_check(
         run_id=run_id
     )
 
+    return {'status': run.status, 'action': run.required_action} # Replaced model with hardcoded response because new API version breaks the model code
+
     return RunThreadStatusResp(status=run.status, action=run.required_action)
 
 @router.post('/text/{thread_id}/runs/{run_id}/submit_tool_outputs', status_code=status.HTTP_204_NO_CONTENT)
@@ -158,5 +162,3 @@ async def text_thread_submit_tool(
             "output": fetch_search_results_text(req_data.prompt)
         }]
     )
-
-    return None
