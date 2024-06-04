@@ -23,7 +23,7 @@ const Login = () => {
     formData.append('username', username);
     formData.append('password', password);
     try {
-      const response = await axios.post('http://localhost:8080/api/v1/users/token', formData, {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/users/token`, formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded'
         }

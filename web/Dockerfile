@@ -1,6 +1,7 @@
 FROM node:20-alpine as builder
 WORKDIR '/app'
 COPY package.json .
+COPY .env .
 RUN npm install
 
 RUN npm install axios

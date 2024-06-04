@@ -13,7 +13,7 @@ const Chat = () => {
     const fetchUsername = async () => {
       try {
         const accessToken = Cookies.get('accessToken');
-        const response = await axios.get('http://localhost:8080/api/v1/users/me', {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/users/me`, {
           headers: {
             Authorization: `Bearer ${accessToken}`
           }
@@ -30,7 +30,7 @@ const Chat = () => {
   const handleLogout = async () => {
     try {
       const accessToken = Cookies.get('accessToken');
-      await axios.post('http://localhost:8080/api/v1/users/logout', null, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/users/logout`, null, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }

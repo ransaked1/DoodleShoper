@@ -48,7 +48,7 @@ useEffect(() => {
     const fetchUsername = async () => {
       try {
         const accessToken = Cookies.get('accessToken');
-        const response = await axios.get('http://localhost:8080/api/v1/users/me', {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/users/me`, {
           headers: {
             Authorization: `Bearer ${accessToken}`
           }
@@ -136,7 +136,7 @@ const handleKeyPress = (event) => {
   const fetchThreads = async () => {
     try {
       const accessToken = Cookies.get('accessToken');
-      const response = await axios.get('http://localhost:8080/api/v1/threads/mixed', {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/threads/mixed`, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
@@ -153,7 +153,7 @@ const handleKeyPress = (event) => {
   const fetchMessages = async (threadId) => {
     try {
       const accessToken = Cookies.get('accessToken');
-      const response = await axios.get(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/threads/mixed/${threadId}/messages`, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
@@ -170,7 +170,7 @@ const handleKeyPress = (event) => {
   const handleNewThread = async () => {
     try {
       const accessToken = Cookies.get('accessToken');
-      const newThreadResponse = await axios.post('http://localhost:8080/api/v1/threads/mixed', null, {
+      const newThreadResponse = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/threads/mixed`, null, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
@@ -183,7 +183,7 @@ const handleKeyPress = (event) => {
       const newThreadId = newThreadResponse.data.id;
 
       // Send a default message from the assistant to the new thread
-      await axios.post(`http://localhost:8080/api/v1/threads/mixed/${newThreadId}/messages/assistant`, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/threads/mixed/${newThreadId}/messages/assistant`, {
         content: introMessage
       }, {
         headers: {
@@ -210,7 +210,7 @@ const handleKeyPress = (event) => {
     setLoading(true); // Set loading to true while processing the message
     try {
       const accessToken = Cookies.get('accessToken');
-      const response = await axios.post(`http://localhost:8080/api/v1/threads/mixed/${selectedThread}/messages`, {
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/threads/mixed/${selectedThread}/messages`, {
         content: `{\"text\": \"${newMessage}\" }`
       }, {
         headers: {
@@ -234,7 +234,7 @@ const handleKeyPress = (event) => {
     try {
       const accessToken = Cookies.get('accessToken');
       const runResponse = await axios.post(
-        `http://localhost:8080/api/v1/threads/mixed/${threadId}/runs`,
+        `${process.env.REACT_APP_API_URL}/api/v1/threads/mixed/${threadId}/runs`,
         null,
         {
           headers: {
@@ -256,7 +256,7 @@ const handleKeyPress = (event) => {
       let intervalId = setInterval(async () => {
         try {
           const response = await axios.get(
-            `http://localhost:8080/api/v1/threads/mixed/${threadId}/runs/${runId}`,
+            `${process.env.REACT_APP_API_URL}/api/v1/threads/mixed/${threadId}/runs/${runId}`,
             {
               headers: {
                 Authorization: `Bearer ${accessToken}`,
@@ -285,7 +285,7 @@ const handleKeyPress = (event) => {
             clearInterval(intervalId); // Stop the interval when run is completed
             setOverlayShownOnce(false);
             // Send a an assistant message for the failure
-            await axios.post(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages/assistant`, {
+            await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/threads/mixed/${threadId}/messages/assistant`, {
               content: "{\"text\": \"Sorry, I haven't received the needed information for the search. Would you like to try again?\"}"
             }, {
               headers: {
@@ -300,7 +300,7 @@ const handleKeyPress = (event) => {
           console.error('Failed to check run status', error);
           clearInterval(intervalId);
           // Send a an assistant message for the failure
-          await axios.post(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages/assistant`, {
+          await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/threads/mixed/${threadId}/messages/assistant`, {
             content: "{\"text\": \"Sorry, something went terribly wrong on my end. Would you like to try again?\"}"
           }, {
             headers: {
@@ -313,7 +313,7 @@ const handleKeyPress = (event) => {
       }, 1000); // Check every 1 second
     } catch (error) {
       console.error('Failed to start checking run status', error);
-      await axios.post(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages/assistant`, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/threads/mixed/${threadId}/messages/assistant`, {
             content: "{\"text\": \"Sorry, something went terribly wrong on my end. Would you like to try again?\"}"
           }, {
             headers: {
@@ -339,7 +339,7 @@ const handleKeyPress = (event) => {
       setImageProcessing(true);
       hideOverlay();
       await axios.post(
-        `http://localhost:8080/api/v1/threads/mixed/${selectedThread}/runs/${runId}/submit_tool_outputs`,
+        `${process.env.REACT_APP_API_URL}/api/v1/threads/mixed/${selectedThread}/runs/${runId}/submit_tool_outputs`,
         {
           tool_call_id: toolCallId,
           prompt,
@@ -358,7 +358,7 @@ const handleKeyPress = (event) => {
     } catch (error) {
       console.error('Failed to submit tool outputs', error);
       // Send a an assistant message for the failure
-      await axios.post(`http://localhost:8080/api/v1/threads/mixed/${selectedThread}/messages/assistant`, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/threads/mixed/${selectedThread}/messages/assistant`, {
         content: "{\"text\": \"Sorry, something went terribly wrong on my end. Would you like to try again?\"}"
       }, {
         headers: {
@@ -375,7 +375,7 @@ const handleKeyPress = (event) => {
     setSelectedThread(threadId);
     try {
         const accessToken = Cookies.get('accessToken');
-        const response = await axios.get(`http://localhost:8080/api/v1/threads/mixed/${threadId}/messages`, {
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/threads/mixed/${threadId}/messages`, {
           headers: {
             Authorization: `Bearer ${accessToken}`
           }
@@ -392,7 +392,7 @@ const handleKeyPress = (event) => {
   const handleDeleteThread = async (threadId) => {
     try {
       const accessToken = Cookies.get('accessToken');
-      await axios.delete(`http://localhost:8080/api/v1/threads/mixed?thread_id=${threadId}`, {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/v1/threads/mixed?thread_id=${threadId}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
@@ -413,7 +413,7 @@ const handleKeyPress = (event) => {
   const handleLogout = async () => {
     try {
       const accessToken = Cookies.get('accessToken');
-      await axios.post('http://localhost:8080/api/v1/users/logout', null, {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/users/logout`, null, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
