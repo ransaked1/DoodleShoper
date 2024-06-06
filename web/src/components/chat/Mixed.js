@@ -469,7 +469,7 @@ function transformMessageContent(messageContent) {
   const linkThumbnails = thumbnails && links ? 
     links.map((link, index) => {
       const thumbnail = thumbnails[index] ? `<img src="${thumbnails[index]}" alt="thumbnail" class="thumbnail-link"/>` : '';
-      return `<a href="${link.url}" target="_blank" rel="noopener noreferrer">${thumbnail}</a>`;
+      return `<a href="${link}" target="_blank" rel="noopener noreferrer">${thumbnail}</a>`;
     }).join(' ') : '';
 
   // Combine all parts

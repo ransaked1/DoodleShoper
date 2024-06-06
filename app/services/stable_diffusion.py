@@ -46,8 +46,10 @@ def generate_image_stable_diffusion(prompt, base64_img):
     # Trigger Generation
     response = requests.post(url=f'{url}{STABLE_DIFFUSION_PATH}', json=payload)
 
+    print(response)
+
     # Read results
     r = response.json()
     result = r['images'][0]
-    
+
     return result.split(",", 1)[0]
